@@ -11,11 +11,10 @@ import { Download, Filter, FileSpreadsheet } from 'lucide-react'
 import { ReportDateFilter } from '@/components/ReportDateFilter'
 import { ExportButton } from '@/components/ExportButton'
 
-export default async function ReportsPage({
-    searchParams
-}: {
-    searchParams: { days?: string, from?: string, to?: string }
+export default async function ReportsPage(props: {
+    searchParams: Promise<{ days?: string, from?: string, to?: string }>
 }) {
+    const searchParams = await props.searchParams;
     const days = Number(searchParams.days) || 30
     const fromDate = searchParams.from
     const toDate = searchParams.to
@@ -30,9 +29,11 @@ export default async function ReportsPage({
         ? { fromDate, toDate }
         : { fromDate: new Date().toISOString().split('T')[0], expiry_days: days }
 
-    const { data: upcoming } = await getPolicies({ ...upcomingQuery, limit: 50, status: 'Active' })
-    const { data: overdue } = await getPolicies({ is_overdue: true, limit: 50 }) // Overdue is always "past"
-    const { data: expired } = await getPolicies({ status: 'Expired', limit: 50 })
+    const [{ data: upcoming }, { data: overdue }, { data: expired }] = await Promise.all([
+        getPolicies({ ...upcomingQuery, limit: 50, status: 'Active' }),
+        getPolicies({ is_overdue: true, limit: 50 }),
+        getPolicies({ status: 'Expired', limit: 50 })
+    ])
 
     // Prepare export query (convert days to explicit date range if needed)
     const exportQuery = fromDate && toDate

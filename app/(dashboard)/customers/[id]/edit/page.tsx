@@ -7,7 +7,8 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import Link from 'next/link'
 
-export default async function EditCustomerPage({ params }: { params: { id: string } }) {
+export default async function EditCustomerPage(props: { params: Promise<{ id: string }> }) {
+    const params = await props.params;
     const { data: customer, error } = await getCustomerById(params.id)
 
     if (error || !customer) {

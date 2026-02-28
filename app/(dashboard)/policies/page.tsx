@@ -31,8 +31,10 @@ export default async function PoliciesPage(props: {
     const company = searchParams.company || 'all'
     const limit = 10
 
-    const { data: policies, count } = await getPolicies({ query, page, limit, status, company_id: company })
-    const { data: companies } = await getCompanies()
+    const [{ data: policies, count }, { data: companies }] = await Promise.all([
+        getPolicies({ query, page, limit, status, company_id: company }),
+        getCompanies()
+    ])
 
     return (
         <div className="flex flex-col gap-6 w-full max-w-[1600px] mx-auto">

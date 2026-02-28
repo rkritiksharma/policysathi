@@ -1,5 +1,7 @@
 'use client'
 
+import { Suspense } from 'react'
+
 import { Sidebar } from '@/components/Sidebar'
 import { Header } from '@/components/Header'
 import { MobileSidebar } from '@/components/MobileSidebar'
@@ -53,7 +55,9 @@ export default function DashboardLayout({
                     </div>
 
                     <main className="flex flex-1 flex-col gap-4 p-4 pb-20 md:pb-4 lg:gap-6 lg:p-8">
-                        {children}
+                        <Suspense fallback={<div className="flex h-full w-full items-center justify-center p-12 text-muted-foreground animate-pulse">Loading dashboard...</div>}>
+                            {children}
+                        </Suspense>
                     </main>
                 </div>
 

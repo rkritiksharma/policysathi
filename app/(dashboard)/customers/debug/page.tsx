@@ -2,7 +2,8 @@
 import { getCustomerById } from '../actions'
 import { createClient } from '@/lib/supabase/server'
 
-export default async function DebugCustomerPage({ searchParams }: { searchParams: { id?: string } }) {
+export default async function DebugCustomerPage(props: { searchParams: Promise<{ id?: string }> }) {
+    const searchParams = await props.searchParams;
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
 

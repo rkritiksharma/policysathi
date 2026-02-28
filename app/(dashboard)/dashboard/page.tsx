@@ -19,14 +19,16 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
     const params = await searchParams
     const daysFilter = params.days ? parseInt(params.days) : 30 // Default 30 days
     const chartRange = params.range || '6M'
-    const stats = await getDashboardStats()
-    const revenueStats = await getRevenueStats(chartRange)
-    const upcoming = await getUpcomingRenewals(daysFilter)
-    const overdue = await getOverduePolicies()
+    const [stats, revenueStats, upcoming, overdue, expiringPolicies] = await Promise.all([
+        getDashboardStats(),
+        getRevenueStats(chartRange),
+        getUpcomingRenewals(daysFilter),
+        getOverduePolicies(),
+        getExpiringNotifications()
+    ])
 
     // Determine alert banner content (Mock logic for now based on design)
     // Real logic: count policies expiring in < 7 days
-    const expiringPolicies = await getExpiringNotifications()
     const expiringCount = expiringPolicies.length
     const expiringDays = 7
 

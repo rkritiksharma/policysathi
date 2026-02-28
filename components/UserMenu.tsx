@@ -43,14 +43,14 @@ export function UserMenu({
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className={`relative ${buttonSize} rounded-full p-0`}>
+                <button className={`relative ${buttonSize} rounded-full p-0 overflow-hidden outline-none focus-visible:ring-2 focus-visible:ring-primary`}>
                     <Avatar className={avatarSize}>
                         <AvatarImage src="/avatars/01.png" alt={user?.name || 'User'} />
                         <AvatarFallback className="text-xs md:text-sm">
                             {user ? getInitials(user.name) : 'U'}
                         </AvatarFallback>
                     </Avatar>
-                </Button>
+                </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56" align="end" forceMount>
                 <DropdownMenuLabel className="font-normal">

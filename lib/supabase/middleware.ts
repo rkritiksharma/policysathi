@@ -7,6 +7,11 @@ export async function updateSession(request: NextRequest) {
         request,
     })
 
+    const isPrefetch = request.headers.get('x-middleware-prefetch') === '1'
+    if (isPrefetch) {
+        return NextResponse.next()
+    }
+
     const supabase = createServerClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -28,8 +33,8 @@ export async function updateSession(request: NextRequest) {
         }
     )
 
-    // refresh session if expired - required for Server Components
-    // https://supabase.com/docs/guides/auth/server-side/nextjs
+    // Check session - getUser is secure and validates the token.
+    // We cannot use getSession because Supabase strictly warns against it for SSR.
     const {
         data: { user },
     } = await supabase.auth.getUser()
@@ -58,22 +63,40 @@ export async function updateSession(request: NextRequest) {
 
     // Force onboarding if agency_name is missing
     if (user && !isPublicRoute) {
-        const { data: agent } = await supabase
-            .from('agents')
-            .select('agency_name')
-            .eq('id', user.id)
-            .single();
-
+        // Check if we already know they are onboarded via a cookie to save a DB call on every navigation
+        const isOnboardedCookie = request.cookies.get('policy_sathi_onboarded')?.value;
         const isOnboardingRoute = request.nextUrl.pathname.startsWith('/onboarding');
 
-        if (!agent?.agency_name && !isOnboardingRoute) {
+        let isAgentOnboarded = isOnboardedCookie === 'true';
+
+        // If we don't know, fetch from DB
+        if (!isAgentOnboarded) {
+            const { data: agent } = await supabase
+                .from('agents')
+                .select('agency_name')
+                .eq('id', user.id)
+                .single();
+
+            isAgentOnboarded = !!agent?.agency_name;
+
+            // Set cookie so we don't have to check DB again for this session
+            if (isAgentOnboarded) {
+                supabaseResponse.cookies.set('policy_sathi_onboarded', 'true', {
+                    maxAge: 60 * 60 * 24 * 7, // 1 week
+                    path: '/',
+                    sameSite: 'lax'
+                });
+            }
+        }
+
+        if (!isAgentOnboarded && !isOnboardingRoute) {
             // Missing agency_name, force them to onboarding
             const url = request.nextUrl.clone()
             url.pathname = '/onboarding'
             return NextResponse.redirect(url)
         }
 
-        if (agent?.agency_name && isOnboardingRoute) {
+        if (isAgentOnboarded && isOnboardingRoute) {
             // Already onboarded, don't let them see onboarding again
             const url = request.nextUrl.clone()
             url.pathname = '/dashboard'
