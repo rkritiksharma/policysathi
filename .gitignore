@@ -82,5 +82,8 @@ components_lint.txt
 *.tar.gz
 *.zip
 
-# ---------- Skills (cloned repo) ----------
-.agents/skills/
+# ---------- AI Agents & Notes ----------
+.agents/
+MOBILE_ACCESS.md
+MOBILE_ACCESS_FIX.md
+TROUBLESHOOTING.md
