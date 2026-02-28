@@ -5,15 +5,16 @@ import { getPolicyById } from '../actions'
 import { Button } from "@/components/ui/button"
 import { PolicyFormWrapper } from '@/components/PolicyFormWrapper'
 
-export default async function NewPolicyPage(props: { searchParams: Promise<{ renew?: string }> }) {
+export default async function NewPolicyPage(props: { searchParams: Promise<{ renew?: string, customerId?: string }> }) {
     const searchParams = await props.searchParams;
+    const { renew, customerId } = searchParams;
     // Fetch data for dropdowns
     const { data: companies } = await getCompanies()
     const { data: customers } = await getCustomers('', 1, 100)
 
     let initialData = null
-    if (searchParams.renew) {
-        const { data } = await getPolicyById(searchParams.renew)
+    if (renew) {
+        const { data } = await getPolicyById(renew)
         if (data) {
             initialData = data
         }
@@ -34,6 +35,7 @@ export default async function NewPolicyPage(props: { searchParams: Promise<{ ren
                 customers={customers || []}
                 companies={companies || []}
                 initialData={initialData}
+                initialCustomerId={customerId}
             />
         </div>
     )

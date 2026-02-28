@@ -65,7 +65,7 @@ export function Header() {
                 {/* Notifications */}
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <button className="inline-flex items-center justify-center whitespace-nowrap text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground rounded-full relative h-8 w-8 md:h-10 md:w-10">
+                        <button suppressHydrationWarning className="inline-flex items-center justify-center whitespace-nowrap text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground rounded-full relative h-8 w-8 md:h-10 md:w-10">
                             <Bell className="h-4 w-4 md:h-5 md:w-5 text-gray-600" />
                             {notifications.length > 0 && (
                                 <span className="absolute top-1 right-1 md:top-2 md:right-2 h-2 w-2 rounded-full bg-red-600 border border-white" />

@@ -6,6 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { Phone, MessageCircle, Mail, MapPin, Calendar, CheckCircle2, Circle, RefreshCw, Shield, AlertCircle, FileText, ArrowUpRight, Clock } from 'lucide-react'
+import { getWhatsAppUrl } from '@/lib/utils'
+import { format, parseISO } from 'date-fns'
 import {
     Table,
     TableBody,
@@ -15,6 +17,8 @@ import {
     TableRow,
 } from "@/components/ui/table"
 import { CustomerNotes } from '@/components/CustomerNotes'
+import { CustomerBadge } from '@/components/CustomerBadge'
+import { PolicyActions } from '@/components/PolicyActions'
 
 export default async function CustomerDetailsPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params
@@ -48,6 +52,13 @@ export default async function CustomerDetailsPage({ params }: { params: Promise<
         return diffDays <= 30 && diffDays >= 0 && p.status === 'Active';
     }).length;
 
+    // VIP if 3+ policies OR total premium > ₹1,00,000
+    const isVIP = policies.length >= 3 || totalPremium >= 100000
+
+    // Format DOB
+    const formattedDob = customer.date_of_birth
+        ? (() => { try { return format(parseISO(customer.date_of_birth.split('T')[0]), 'dd MMM yyyy') } catch { return customer.date_of_birth } })()
+        : 'N/A'
 
     return (
         <div className="flex flex-col gap-8 w-full max-w-[1600px] mx-auto pb-10 animate-in fade-in duration-500">
@@ -64,14 +75,15 @@ export default async function CustomerDetailsPage({ params }: { params: Promise<
                         <div>
                             <div className="flex items-center gap-3">
                                 <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-primary">{customer.name}</h1>
-                                <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-200 border-amber-200 text-xs font-bold uppercase tracking-wider px-2 py-0.5">VIP</Badge>
+                                <CustomerBadge code={customer.customer_code} className="text-sm px-2 py-0.5" />
+                                {isVIP && <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-200 border-amber-200 text-xs font-bold uppercase tracking-wider px-2 py-0.5">VIP</Badge>}
                             </div>
                             <div className="flex flex-wrap gap-4 mt-3 text-sm font-medium">
                                 <div className="flex items-center gap-1.5 bg-gray-50 text-gray-600 px-3 py-1 rounded-full border border-gray-100">
                                     <MapPin className="h-3.5 w-3.5 text-primary" /> {customer.city || 'No City'}
                                 </div>
                                 <div className="flex items-center gap-1.5 bg-gray-50 text-gray-600 px-3 py-1 rounded-full border border-gray-100">
-                                    <Calendar className="h-3.5 w-3.5 text-primary" /> Born: {customer.date_of_birth || 'N/A'}
+                                    <Calendar className="h-3.5 w-3.5 text-primary" /> Born: {formattedDob}
                                 </div>
                                 <div className="flex items-center gap-1.5 bg-gray-50 text-gray-600 px-3 py-1 rounded-full border border-gray-100">
                                     <Clock className="h-3.5 w-3.5 text-primary" /> Joined {new Date(customer.created_at).toLocaleDateString()}
@@ -81,15 +93,23 @@ export default async function CustomerDetailsPage({ params }: { params: Promise<
                     </div>
 
                     <div className="flex flex-wrap gap-3 w-full md:w-auto">
-                        <Button className="flex-1 md:flex-none bg-green-600 hover:bg-green-700 text-white shadow-md font-semibold gap-2">
-                            <MessageCircle className="h-4 w-4" /> WhatsApp
+                        <Button asChild className="flex-1 md:flex-none bg-green-600 hover:bg-green-700 text-white shadow-md font-semibold gap-2">
+                            <a href={getWhatsAppUrl(customer.phone, `Namaste ${customer.name}! 🙏`)} target="_blank" rel="noopener noreferrer">
+                                <MessageCircle className="h-4 w-4" /> WhatsApp
+                            </a>
                         </Button>
-                        <Button className="flex-1 md:flex-none bg-primary hover:bg-primary/90 text-white shadow-md gap-2">
-                            <Phone className="h-4 w-4" /> Call
+                        <Button asChild className="flex-1 md:flex-none bg-primary hover:bg-primary/90 text-white shadow-md gap-2">
+                            <a href={`tel:${customer.phone}`}>
+                                <Phone className="h-4 w-4" /> Call
+                            </a>
                         </Button>
-                        <Button variant="outline" className="flex-1 md:flex-none shadow-sm gap-2">
-                            <Mail className="h-4 w-4" /> Email
-                        </Button>
+                        {customer.email && (
+                            <Button asChild variant="outline" className="flex-1 md:flex-none shadow-sm gap-2">
+                                <a href={`mailto:${customer.email}`}>
+                                    <Mail className="h-4 w-4" /> Email
+                                </a>
+                            </Button>
+                        )}
                     </div>
                 </div>
             </div>
@@ -137,8 +157,6 @@ export default async function CustomerDetailsPage({ params }: { params: Promise<
                             <TabsList className="bg-white p-1 rounded-xl shadow-sm border h-auto">
                                 <TabsTrigger value="policies" className="rounded-lg px-4 py-2 data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 font-medium transition-all">Policies</TabsTrigger>
                                 <TabsTrigger value="overview" className="rounded-lg px-4 py-2 data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 font-medium transition-all">Details</TabsTrigger>
-                                <TabsTrigger value="communications" className="rounded-lg px-4 py-2 data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 font-medium transition-all">Timeline</TabsTrigger>
-                                <TabsTrigger value="tasks" className="rounded-lg px-4 py-2 data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 font-medium transition-all">Tasks</TabsTrigger>
                             </TabsList>
                         </div>
 
@@ -149,7 +167,7 @@ export default async function CustomerDetailsPage({ params }: { params: Promise<
                                     <div className="flex justify-between items-center">
                                         <CardTitle>Insurance Policies</CardTitle>
                                         <Button size="sm" className="bg-primary hover:bg-primary/90 text-white gap-2 shadow-sm" asChild>
-                                            <Link href="/policies/new"><Shield className="h-4 w-4" /> New Policy</Link>
+                                            <Link href={`/policies/new?customerId=${id}`}><Shield className="h-4 w-4" /> New Policy</Link>
                                         </Button>
                                     </div>
                                 </CardHeader>
@@ -175,7 +193,7 @@ export default async function CustomerDetailsPage({ params }: { params: Promise<
                                                     <TableRow key={policy.id} className="hover:bg-blue-50/30 transition-colors group">
                                                         <TableCell className="align-top py-4">
                                                             <div className="flex flex-col gap-1">
-                                                                <span className="font-semibold text-gray-900">{policy.type}</span>
+                                                                <Link href={`/policies/${policy.id}`} className="font-semibold text-gray-900 hover:text-primary hover:underline">{policy.type}</Link>
                                                                 <span className="text-sm text-gray-500">{policy.company}</span>
                                                                 <span className="text-xs text-gray-400 font-mono">{policy.policy_number}</span>
                                                                 {policy.vehicle_reg !== 'N/A' && (
@@ -193,8 +211,8 @@ export default async function CustomerDetailsPage({ params }: { params: Promise<
                                                             <Badge variant={policy.status === 'Active' ? 'default' : 'secondary'}
                                                                 className={
                                                                     policy.status === 'Active'
-                                                                        ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-100 border-0 shadow-none"
-                                                                        : "bg-gray-100 text-gray-600 border-0 shadow-none"
+                                                                        ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-100 border-0 shadow-none z-10 relative"
+                                                                        : "bg-gray-100 text-gray-600 border-0 shadow-none z-10 relative"
                                                                 }>
                                                                 {policy.status}
                                                             </Badge>
@@ -207,6 +225,12 @@ export default async function CustomerDetailsPage({ params }: { params: Promise<
                                                                 <Button size="sm" className="h-8 bg-primary hover:bg-primary/90 text-white gap-1 shadow-sm" asChild>
                                                                     <Link href={`/policies/new?renew=${policy.id}`}>Renew</Link>
                                                                 </Button>
+                                                                <PolicyActions
+                                                                    id={policy.id}
+                                                                    pdf_url={policy.pdf_url}
+                                                                    customerPhone={customer?.phone}
+                                                                    policyNumber={policy.policy_number}
+                                                                />
                                                             </div>
                                                         </TableCell>
                                                     </TableRow>
@@ -320,7 +344,7 @@ export default async function CustomerDetailsPage({ params }: { params: Promise<
                         </CardHeader>
                         <CardContent className="space-y-3 pt-6">
                             <Button className="w-full justify-start bg-primary hover:bg-primary/90 text-white shadow-md" asChild>
-                                <Link href="/policies/new"><Shield className="mr-2 h-4 w-4" /> Create New Policy</Link>
+                                <Link href={`/policies/new?customerId=${id}`}><Shield className="mr-2 h-4 w-4" /> Create New Policy</Link>
                             </Button>
                             <Button variant="outline" className="w-full justify-start border-gray-200 hover:bg-gray-50 text-gray-700">
                                 <FileText className="mr-2 h-4 w-4" /> Send Statement

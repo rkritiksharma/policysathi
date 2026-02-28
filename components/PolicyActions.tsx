@@ -1,6 +1,6 @@
 'use client'
 
-import { MoreHorizontal, Pencil, Trash, Download } from "lucide-react"
+import { MoreHorizontal, Pencil, Trash, Download, MessageCircle } from "lucide-react"
 import Link from "next/link"
 import { useState, useTransition } from "react"
 import { deletePolicy } from "@/app/(dashboard)/policies/actions"
@@ -22,8 +22,9 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import { getWhatsAppUrl } from "@/lib/utils"
 
-export function PolicyActions({ id, pdf_url }: { id: string, pdf_url?: string | null }) {
+export function PolicyActions({ id, pdf_url, customerPhone, policyNumber }: { id: string, pdf_url?: string | null, customerPhone?: string, policyNumber?: string }) {
     const [open, setOpen] = useState(false)
     const [showDeleteDialog, setShowDeleteDialog] = useState(false)
     const [isPending, startTransition] = useTransition()
@@ -39,6 +40,12 @@ export function PolicyActions({ id, pdf_url }: { id: string, pdf_url?: string | 
         })
     }
 
+    // Create WhatsApp Share Text
+    const waShareText = `Namaste! Here is your policy document${policyNumber ? ` (${policyNumber})` : ''}. Please download or view it here: ${pdf_url}`
+    const waShareLink = customerPhone
+        ? getWhatsAppUrl(customerPhone, waShareText)
+        : `https://wa.me/?text=${encodeURIComponent(waShareText)}`
+
     return (
         <>
             <DropdownMenu open={open} onOpenChange={setOpen}>
@@ -51,18 +58,26 @@ export function PolicyActions({ id, pdf_url }: { id: string, pdf_url?: string | 
                 <DropdownMenuContent align="end">
                     {/* JSON.stringify(pdf_url) // Debug */}
                     {pdf_url && (
-                        <DropdownMenuItem asChild>
-                            <a href={pdf_url} target="_blank" rel="noopener noreferrer" className="flex items-center cursor-pointer text-primary focus:text-primary/80">
-                                <Download className="mr-2 h-4 w-4" />
-                                <span>Download PDF</span>
-                            </a>
-                        </DropdownMenuItem>
+                        <>
+                            <DropdownMenuItem asChild>
+                                <a href={pdf_url} target="_blank" rel="noopener noreferrer" className="flex items-center cursor-pointer text-primary focus:text-primary/80">
+                                    <Download className="mr-2 h-4 w-4" />
+                                    <span>Download PDF</span>
+                                </a>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem asChild>
+                                <a href={waShareLink} target="_blank" rel="noopener noreferrer" className="flex items-center cursor-pointer text-green-600 focus:text-green-600 focus:bg-green-50">
+                                    <MessageCircle className="mr-2 h-4 w-4" />
+                                    <span>Share on WhatsApp</span>
+                                </a>
+                            </DropdownMenuItem>
+                        </>
                     )}
 
-                    <DropdownMenuItem asChild disabled>
-                        <Link href={`/policies/${id}/edit`} className="flex items-center cursor-pointer opacity-50">
+                    <DropdownMenuItem asChild>
+                        <Link href={`/policies/${id}/edit`} className="flex items-center cursor-pointer">
                             <Pencil className="mr-2 h-4 w-4" />
-                            <span>Edit (Coming Soon)</span>
+                            <span>Edit Policy</span>
                         </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem

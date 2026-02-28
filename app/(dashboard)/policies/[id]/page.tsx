@@ -5,9 +5,10 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
-import { ArrowLeft, Calendar, Car, Download, FileText, Shield, User } from 'lucide-react'
+import { ArrowLeft, Calendar, Car, Download, FileText, Shield, User, ExternalLink } from 'lucide-react'
 import { format } from 'date-fns'
 import { DocumentUpload } from '@/components/DocumentUpload'
+import { CustomerBadge } from '@/components/CustomerBadge'
 
 export default async function PolicyDetailsPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params
@@ -20,7 +21,7 @@ export default async function PolicyDetailsPage({ params }: { params: Promise<{ 
         .from('policies')
         .select(`
             *,
-            customers (name, phone, email),
+            customers (id, customer_code, name, phone, email),
             companies (name)
         `)
         .eq('id', id)
@@ -47,7 +48,9 @@ export default async function PolicyDetailsPage({ params }: { params: Promise<{ 
                     <p className="text-muted-foreground">{policy.policy_number}</p>
                 </div>
                 <div className="ml-auto flex gap-2">
-                    <Button variant="outline">Edit Policy</Button>
+                    <Button variant="outline" asChild>
+                        <Link href={`/policies/${id}/edit`}>Edit Policy</Link>
+                    </Button>
                 </div>
             </div>
 
@@ -94,7 +97,9 @@ export default async function PolicyDetailsPage({ params }: { params: Promise<{ 
                                 <div>
                                     <Label className="text-muted-foreground text-xs uppercase tracking-wider">Start Date</Label>
                                     <div className="font-medium mt-1">
-                                        {format(new Date(policy.start_date), 'dd MMM yyyy')}
+                                        {policy.start_date && new Date(policy.start_date).getFullYear() > 1971
+                                            ? format(new Date(policy.start_date), 'dd MMM yyyy')
+                                            : 'N/A'}
                                     </div>
                                 </div>
                                 <div>
@@ -114,25 +119,36 @@ export default async function PolicyDetailsPage({ params }: { params: Promise<{ 
                         </CardContent>
                     </Card>
 
-                    {/* Customer Info */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <User className="h-5 w-5" /> Customer Details
-                            </CardTitle>
+                    {/* Customer Info integrated link */}
+                    <Card className="border-primary/20 bg-primary/5">
+                        <CardHeader className="pb-3 border-b border-primary/10">
+                            <div className="flex items-center justify-between">
+                                <CardTitle className="flex items-center gap-2 text-lg">
+                                    <User className="h-5 w-5 text-primary" /> Customer Overview
+                                </CardTitle>
+                                {policy.customers?.id && (
+                                    <Button variant="ghost" size="sm" className="h-8 gap-1 text-primary hover:text-primary hover:bg-primary/10" asChild>
+                                        <Link href={`/customers/${policy.customers.id}`}>
+                                            View Profile <ExternalLink className="h-3.5 w-3.5" />
+                                        </Link>
+                                    </Button>
+                                )}
+                            </div>
                         </CardHeader>
-                        <CardContent className="grid md:grid-cols-2 gap-4">
+                        <CardContent className="grid md:grid-cols-2 gap-4 pt-4">
                             <div>
-                                <Label className="text-muted-foreground">Name</Label>
-                                <div className="font-medium">{policy.customers?.name}</div>
+                                <Label className="text-muted-foreground text-xs uppercase">Name</Label>
+                                <div className="font-medium flex items-center justify-between mt-1">
+                                    <span>{policy.customers?.name}</span>
+                                    {policy.customers?.customer_code && (
+                                        <CustomerBadge code={policy.customers.customer_code} className="text-xs py-0" />
+                                    )}
+                                </div>
                             </div>
                             <div>
-                                <Label className="text-muted-foreground">Phone</Label>
-                                <div className="font-medium">{policy.customers?.phone}</div>
-                            </div>
-                            <div>
-                                <Label className="text-muted-foreground">Email</Label>
-                                <div className="font-medium">{policy.customers?.email || '-'}</div>
+                                <Label className="text-muted-foreground text-xs uppercase">Contact</Label>
+                                <div className="font-medium mt-1">{policy.customers?.phone}</div>
+                                <div className="text-sm text-muted-foreground">{policy.customers?.email || '-'}</div>
                             </div>
                         </CardContent>
                     </Card>
@@ -140,7 +156,12 @@ export default async function PolicyDetailsPage({ params }: { params: Promise<{ 
 
                 <div className="space-y-6">
                     {/* Document Upload Section */}
-                    <DocumentUpload policyId={policy.id} currentUrl={policy.pdf_url} />
+                    <DocumentUpload
+                        policyId={policy.id}
+                        currentUrl={policy.pdf_url}
+                        customerPhone={policy.customers?.phone}
+                        policyNumber={policy.policy_number}
+                    />
 
                     {/* Additional Details */}
                     <Card>

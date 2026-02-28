@@ -77,32 +77,44 @@ export async function universalSearch(query: string) {
     const { supabase, user } = await getAuthenticatedUser()
     const searchTerm = query.trim().toLowerCase()
 
-    // Search customers by name or phone
+    // 1. Search customers by name, phone, email, or customer_code
     const { data: customers } = await supabase
         .from('customers')
-        .select('id, name, phone, email')
+        .select('id, name, phone, email, customer_code')
         .eq('agent_id', user.id)
-        .or(`name.ilike.%${searchTerm}%,phone.ilike.%${searchTerm}%,email.ilike.%${searchTerm}%`)
+        .or(`name.ilike.%${searchTerm}%,phone.ilike.%${searchTerm}%,email.ilike.%${searchTerm}%,customer_code.ilike.%${searchTerm}%`)
         .limit(5)
 
-    // Search policies by policy number, vehicle reg no, or customer name
+    // 2. Search policies by policy number or vehicle reg no
     const { data: policies } = await supabase
         .from('policies')
-        .select('id, policy_number, vehicle_reg_no, policy_type, expiry_date, status, customers(id, name, phone), companies(name)')
+        .select('id, policy_number, vehicle_reg_no, policy_type, expiry_date, status, customers(id, name, phone, customer_code), companies(name)')
         .eq('agent_id', user.id)
         .or(`policy_number.ilike.%${searchTerm}%,vehicle_reg_no.ilike.%${searchTerm}%`)
         .limit(5)
 
-    // Also search policies by customer name match
-    const { data: policiesByCustomer } = await supabase
+    // 3. Search policies by customer name match
+    const { data: policiesByCustomerName } = await supabase
         .from('policies')
-        .select('id, policy_number, vehicle_reg_no, policy_type, expiry_date, status, customers!inner(id, name, phone), companies(name)')
+        .select('id, policy_number, vehicle_reg_no, policy_type, expiry_date, status, customers!inner(id, name, phone, customer_code), companies(name)')
         .eq('agent_id', user.id)
         .ilike('customers.name', `%${searchTerm}%`)
         .limit(5)
 
+    // 4. Search policies by customer code match
+    const { data: policiesByCustomerCode } = await supabase
+        .from('policies')
+        .select('id, policy_number, vehicle_reg_no, policy_type, expiry_date, status, customers!inner(id, name, phone, customer_code), companies(name)')
+        .eq('agent_id', user.id)
+        .ilike('customers.customer_code', `%${searchTerm}%`)
+        .limit(5)
+
     // Merge and deduplicate policies
-    const allPolicies = [...(policies || []), ...(policiesByCustomer || [])]
+    const allPolicies = [
+        ...(policies || []),
+        ...(policiesByCustomerName || []),
+        ...(policiesByCustomerCode || [])
+    ]
     const uniquePolicies = allPolicies.filter((policy, index, self) =>
         index === self.findIndex((p) => p.id === policy.id)
     ).slice(0, 8)

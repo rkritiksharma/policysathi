@@ -115,6 +115,50 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
                 </Link>
             </div>
 
+            {/* Quick Actions - Most used shortcuts */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <Link href="/policies/new" className="group">
+                    <Card className="border border-primary/20 bg-primary/5 hover:bg-primary/10 transition-all cursor-pointer shadow-none hover:shadow-sm">
+                        <CardContent className="p-3 md:p-4 flex items-center gap-3">
+                            <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                <FileText className="h-4 w-4 text-primary" />
+                            </div>
+                            <span className="text-sm font-medium text-primary">+ New Policy</span>
+                        </CardContent>
+                    </Card>
+                </Link>
+                <Link href="/customers/new" className="group">
+                    <Card className="border border-blue-200 bg-blue-50/50 hover:bg-blue-50 transition-all cursor-pointer shadow-none hover:shadow-sm">
+                        <CardContent className="p-3 md:p-4 flex items-center gap-3">
+                            <div className="h-9 w-9 rounded-lg bg-blue-100 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                <Users className="h-4 w-4 text-blue-600" />
+                            </div>
+                            <span className="text-sm font-medium text-blue-700">+ New Customer</span>
+                        </CardContent>
+                    </Card>
+                </Link>
+                <Link href="/payments" className="group">
+                    <Card className="border border-amber-200 bg-amber-50/50 hover:bg-amber-50 transition-all cursor-pointer shadow-none hover:shadow-sm">
+                        <CardContent className="p-3 md:p-4 flex items-center gap-3">
+                            <div className="h-9 w-9 rounded-lg bg-amber-100 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                <Clock className="h-4 w-4 text-amber-600" />
+                            </div>
+                            <span className="text-sm font-medium text-amber-700">Payments</span>
+                        </CardContent>
+                    </Card>
+                </Link>
+                <Link href="/reports" className="group">
+                    <Card className="border border-gray-200 bg-gray-50/50 hover:bg-gray-50 transition-all cursor-pointer shadow-none hover:shadow-sm">
+                        <CardContent className="p-3 md:p-4 flex items-center gap-3">
+                            <div className="h-9 w-9 rounded-lg bg-gray-100 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                <AlertCircle className="h-4 w-4 text-gray-600" />
+                            </div>
+                            <span className="text-sm font-medium text-gray-700">Reports</span>
+                        </CardContent>
+                    </Card>
+                </Link>
+            </div>
+
             {/* Charts + Birthday Section */}
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 md:gap-6">
                 <div className="lg:col-span-3 animate-in fade-in slide-in-from-bottom-4 duration-700">

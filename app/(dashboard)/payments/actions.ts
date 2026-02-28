@@ -34,14 +34,14 @@ export interface PolicyWithPayment {
     expiry_date: string
 }
 
-// Get all policies with due payments
-export async function getDuePayments() {
+// Get policies for payment overview based on filter
+export async function getFilteredPayments(filter: string = 'due') {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
 
     if (!user) return { error: 'Not authenticated', policies: [] }
 
-    const { data, error } = await supabase
+    let query = supabase
         .from('policies')
         .select(`
             id,
@@ -55,8 +55,22 @@ export async function getDuePayments() {
             company:companies(id, name)
         `)
         .eq('agent_id', user.id)
-        .in('payment_status', ['due', 'partial'])
         .order('created_at', { ascending: false })
+
+    // Apply filters based on URL parameter
+    if (filter === 'due') {
+        query = query.in('payment_status', ['due', 'partial'])
+    } else if (filter === 'paid') {
+        query = query.eq('payment_status', 'paid')
+    } else if (filter === 'partial') {
+        query = query.eq('payment_status', 'partial')
+    } else if (filter === 'collected') {
+        // Show everything that has at least some payment collected
+        query = query.gt('amount_paid', 0)
+    }
+    // if filter === 'all', no status filter is applied
+
+    const { data, error } = await query
 
     if (error) {
         console.error('Error fetching due payments:', error)

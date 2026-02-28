@@ -26,13 +26,14 @@ type Props = {
     customers: { id: string; name: string; phone: string }[]
     companies: { id: string; name: string }[]
     initialData?: Partial<Policy>
+    initialCustomerId?: string
 }
 
-export function PolicyForm({ customers, companies, initialData }: Props) {
+export function PolicyForm({ customers, companies, initialData, initialCustomerId }: Props) {
     const [isPending, startTransition] = useTransition()
     const [isScanning, setIsScanning] = useState(false)
     const [file, setFile] = useState<File | null>(null)
-    const [currentStep, setCurrentStep] = useState(initialData ? 1 : 0) // Skip upload if renewing
+    const [currentStep, setCurrentStep] = useState((initialData || initialCustomerId) ? 1 : 0) // Skip upload if renewing or pre-selecting customer
 
     // Calculate dates for renewal
     let defaultStart = ''
@@ -59,7 +60,7 @@ export function PolicyForm({ customers, companies, initialData }: Props) {
         engine_no: initialData?.engine_no || '',
         chassis_no: initialData?.chassis_no || '',
         company_id: initialData?.company_id || '',
-        customer_id: initialData?.customer_id || '',
+        customer_id: initialData?.customer_id || initialCustomerId || '',
         policy_type: initialData?.policy_type || 'Car',
         fuel_type: initialData?.fuel_type || 'Petrol',
         vehicle_year: initialData?.vehicle_year || '2024',

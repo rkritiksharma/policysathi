@@ -16,9 +16,10 @@ interface PolicyFormWrapperProps {
     customers: any[]
     companies: any[]
     initialData?: any
+    initialCustomerId?: string
 }
 
-export function PolicyFormWrapper({ customers, companies, initialData }: PolicyFormWrapperProps) {
+export function PolicyFormWrapper({ customers, companies, initialData, initialCustomerId }: PolicyFormWrapperProps) {
     // @ts-ignore - dynamic import props issue
-    return <PolicyForm customers={customers} companies={companies} initialData={initialData} />
+    return <PolicyForm customers={customers} companies={companies} initialData={initialData} initialCustomerId={initialCustomerId} />
 }

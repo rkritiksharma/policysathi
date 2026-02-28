@@ -1,15 +1,40 @@
+import { useState, useEffect } from 'react'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { User } from 'lucide-react'
+import { AddCustomerModal } from './AddCustomerModal'
+import { AddCompanyModal } from './AddCompanyModal'
 
 export default function PolicyFormCustomerStep({
-    customers,
-    companies,
+    customers: initialCustomers,
+    companies: initialCompanies,
     formData,
     handleInputChange,
     setFormData
 }: any) {
+    const [customers, setCustomers] = useState(initialCustomers)
+    const [companies, setCompanies] = useState(initialCompanies)
+
+    // Sync if props change via Server Actions revalidation
+    useEffect(() => {
+        setCustomers(initialCustomers)
+    }, [initialCustomers])
+
+    useEffect(() => {
+        setCompanies(initialCompanies)
+    }, [initialCompanies])
+
+    const handleCustomerAdded = (newCustomer: any) => {
+        setCustomers((prev: any) => [...prev, newCustomer])
+        setFormData((prev: any) => ({ ...prev, customer_id: newCustomer.id }))
+    }
+
+    const handleCompanyAdded = (newCompany: any) => {
+        setCompanies((prev: any) => [...prev, newCompany])
+        setFormData((prev: any) => ({ ...prev, company_id: newCompany.id }))
+    }
+
     return (
         <div className="p-8 transition-all duration-300">
             <div className="text-center mb-8">
@@ -22,8 +47,16 @@ export default function PolicyFormCustomerStep({
 
             <div className="max-w-lg mx-auto space-y-6">
                 <div className="space-y-2">
-                    <Label className="text-base font-medium">Customer <span className="text-red-500">*</span></Label>
-                    <Select name="customer_id" defaultValue={formData.customer_id} required>
+                    <div className="flex justify-between items-center mb-1">
+                        <Label className="text-base font-medium">Customer <span className="text-red-500">*</span></Label>
+                        <AddCustomerModal onCustomerAdded={handleCustomerAdded} />
+                    </div>
+                    <Select
+                        name="customer_id"
+                        required
+                        value={formData.customer_id}
+                        onValueChange={(val) => setFormData((prev: any) => ({ ...prev, customer_id: val }))}
+                    >
                         <SelectTrigger className="h-12 text-base bg-gray-50 border-gray-200">
                             <SelectValue placeholder="Select customer" />
                         </SelectTrigger>
@@ -36,7 +69,10 @@ export default function PolicyFormCustomerStep({
                 </div>
 
                 <div className="space-y-2">
-                    <Label className="text-base font-medium">Insurance Company <span className="text-red-500">*</span></Label>
+                    <div className="flex justify-between items-center mb-1">
+                        <Label className="text-base font-medium">Insurance Company <span className="text-red-500">*</span></Label>
+                        <AddCompanyModal onCompanyAdded={handleCompanyAdded} />
+                    </div>
                     <Select
                         name="company_id"
                         required

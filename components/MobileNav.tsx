@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Home, Users, FileText, BarChart3, Settings } from "lucide-react"
+import { Home, Users, FileText, BarChart3, Wallet } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const navItems = [
@@ -22,14 +22,14 @@ const navItems = [
         icon: FileText,
     },
     {
+        title: "Payments",
+        href: "/payments",
+        icon: Wallet,
+    },
+    {
         title: "Reports",
         href: "/reports",
         icon: BarChart3,
-    },
-    {
-        title: "Settings",
-        href: "/settings",
-        icon: Settings,
     },
 ]
 

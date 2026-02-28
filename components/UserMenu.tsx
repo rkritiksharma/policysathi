@@ -43,7 +43,7 @@ export function UserMenu({
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <button className={`relative ${buttonSize} rounded-full p-0 overflow-hidden outline-none focus-visible:ring-2 focus-visible:ring-primary`}>
+                <button suppressHydrationWarning className={`relative ${buttonSize} rounded-full p-0 overflow-hidden outline-none focus-visible:ring-2 focus-visible:ring-primary`}>
                     <Avatar className={avatarSize}>
                         <AvatarImage src="/avatars/01.png" alt={user?.name || 'User'} />
                         <AvatarFallback className="text-xs md:text-sm">

@@ -2,10 +2,13 @@ import { Suspense } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Wallet, TrendingUp, AlertCircle, CheckCircle, Clock, IndianRupee, MessageCircle } from 'lucide-react'
-import { getDuePayments, getPaymentStats } from './actions'
+import { Input } from '@/components/ui/input'
+import { Wallet, TrendingUp, AlertCircle, CheckCircle, Clock, IndianRupee, MessageCircle, Search } from 'lucide-react'
+import { getFilteredPayments, getPaymentStats } from './actions'
 import { getWhatsAppUrl } from '@/lib/utils'
 import { RecordPaymentDialog } from '@/components/RecordPaymentDialog'
+
+import Link from 'next/link'
 
 async function PaymentStats() {
     const { stats } = await getPaymentStats()
@@ -14,43 +17,58 @@ async function PaymentStats() {
 
     return (
         <div className="grid gap-4 md:grid-cols-4 mb-8">
-            <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Total Premium</CardTitle>
-                    <IndianRupee className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                    <div className="text-2xl font-bold">₹{stats.totalPremium.toLocaleString()}</div>
-                </CardContent>
-            </Card>
-            <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Collected</CardTitle>
-                    <TrendingUp className="h-4 w-4 text-green-500" />
-                </CardHeader>
-                <CardContent>
-                    <div className="text-2xl font-bold text-green-600">₹{stats.totalCollected.toLocaleString()}</div>
-                </CardContent>
-            </Card>
-            <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Total Due</CardTitle>
-                    <AlertCircle className="h-4 w-4 text-red-500" />
-                </CardHeader>
-                <CardContent>
-                    <div className="text-2xl font-bold text-red-600">₹{stats.totalDue.toLocaleString()}</div>
-                </CardContent>
-            </Card>
-            <Card>
+            <Link href="/policies" className="block h-full">
+                <Card className="hover:shadow-md transition-all cursor-pointer h-full hover:bg-gray-50/50">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">Total Premium</CardTitle>
+                        <IndianRupee className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">₹{stats.totalPremium.toLocaleString()}</div>
+                    </CardContent>
+                </Card>
+            </Link>
+
+            <Link href="/payments?filter=collected" className="block h-full">
+                <Card className="hover:shadow-md transition-all cursor-pointer border-l-4 border-l-green-500 h-full hover:bg-green-50/10">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">Collected</CardTitle>
+                        <TrendingUp className="h-4 w-4 text-green-500" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold text-green-600">₹{stats.totalCollected.toLocaleString()}</div>
+                    </CardContent>
+                </Card>
+            </Link>
+
+            <Link href="/payments?filter=due" className="block h-full">
+                <Card className="hover:shadow-md transition-all cursor-pointer border-l-4 border-l-red-500 h-full hover:bg-red-50/10">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">Total Due</CardTitle>
+                        <AlertCircle className="h-4 w-4 text-red-500" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold text-red-600">₹{stats.totalDue.toLocaleString()}</div>
+                    </CardContent>
+                </Card>
+            </Link>
+
+            <Card className="h-full">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">Policies Status</CardTitle>
                     <Wallet className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                    <div className="flex gap-2 text-sm">
-                        <Badge variant="default" className="bg-green-100 text-green-700">{stats.paidPolicies} Paid</Badge>
-                        <Badge variant="default" className="bg-yellow-100 text-yellow-700">{stats.partialPolicies} Partial</Badge>
-                        <Badge variant="default" className="bg-red-100 text-red-700">{stats.duePolicies} Due</Badge>
+                    <div className="flex flex-wrap gap-2 text-sm mt-1">
+                        <Link href="/payments?filter=paid" className="hover:opacity-80 transition-opacity">
+                            <Badge variant="default" className="bg-green-100 text-green-700 cursor-pointer">{stats.paidPolicies} Paid</Badge>
+                        </Link>
+                        <Link href="/payments?filter=partial" className="hover:opacity-80 transition-opacity">
+                            <Badge variant="default" className="bg-yellow-100 text-yellow-700 cursor-pointer">{stats.partialPolicies} Partial</Badge>
+                        </Link>
+                        <Link href="/payments?filter=due" className="hover:opacity-80 transition-opacity">
+                            <Badge variant="default" className="bg-red-100 text-red-700 cursor-pointer">{stats.duePolicies} Due</Badge>
+                        </Link>
                     </div>
                 </CardContent>
             </Card>
@@ -58,8 +76,8 @@ async function PaymentStats() {
     )
 }
 
-async function DuePaymentsList() {
-    const { policies, error } = await getDuePayments()
+async function FilteredPaymentsList({ filter }: { filter: string }) {
+    const { policies, error } = await getFilteredPayments(filter)
 
     if (error) {
         return (
@@ -153,7 +171,18 @@ async function DuePaymentsList() {
     )
 }
 
-export default function PaymentsPage() {
+export default async function PaymentsPage({ searchParams }: { searchParams: Promise<{ filter?: string; q?: string }> }) {
+    const params = await searchParams;
+    const currentFilter = params.filter || 'due';
+    const searchQuery = params.q || '';
+
+    // Determine dynamic title based on filter
+    let listTitle = "Pending Payments";
+    if (currentFilter === 'paid') listTitle = "Paid Policies";
+    if (currentFilter === 'partial') listTitle = "Partially Paid Policies";
+    if (currentFilter === 'collected') listTitle = "Policies with Collected Premium";
+    if (currentFilter === 'all') listTitle = "All Payments";
+
     return (
         <div className="p-6 lg:p-8 space-y-6">
             <div className="flex items-center justify-between">
@@ -167,15 +196,46 @@ export default function PaymentsPage() {
                 <PaymentStats />
             </Suspense>
 
+            {/* Search Bar */}
+            <div className="flex items-center gap-3 bg-white p-3 rounded-xl shadow-sm border border-gray-100">
+                <Search className="h-4 w-4 text-gray-400" />
+                <form className="flex-1">
+                    <input type="hidden" name="filter" value={currentFilter} />
+                    <Input
+                        name="q"
+                        type="text"
+                        placeholder="Search by customer name or policy number..."
+                        defaultValue={params.q || ''}
+                        className="border-0 shadow-none focus-visible:ring-0 h-9 text-sm placeholder:text-gray-400"
+                    />
+                </form>
+            </div>
+
             <div>
-                <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-                    <AlertCircle className="h-5 w-5 text-red-500" />
-                    Pending Payments
-                </h2>
+                <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-xl font-semibold flex items-center gap-2">
+                        {currentFilter === 'due' || currentFilter === 'partial' ? (
+                            <AlertCircle className="h-5 w-5 text-red-500" />
+                        ) : currentFilter === 'paid' || currentFilter === 'collected' ? (
+                            <CheckCircle className="h-5 w-5 text-green-500" />
+                        ) : (
+                            <Wallet className="h-5 w-5 text-primary" />
+                        )}
+                        {listTitle}
+                    </h2>
+
+                    {currentFilter !== 'due' && (
+                        <Link href="/payments" className="text-sm text-blue-600 hover:underline">
+                            Clear Filter (Show Pending)
+                        </Link>
+                    )}
+                </div>
+
                 <Suspense fallback={<div className="animate-pulse h-48 bg-muted rounded-lg" />}>
-                    <DuePaymentsList />
+                    <FilteredPaymentsList filter={currentFilter} />
                 </Suspense>
             </div>
         </div>
     )
 }
+

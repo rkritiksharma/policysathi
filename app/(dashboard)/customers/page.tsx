@@ -14,8 +14,11 @@ import {
     TableRow,
 } from "@/components/ui/table"
 import { Plus, Search, ArrowUpRight, Upload } from 'lucide-react'
+import { ClickableRow } from '@/components/ClickableRow'
 import { CustomerActions } from "@/components/CustomerActions"
 import { EmptyState } from "@/components/EmptyState"
+import { CustomerBadge } from "@/components/CustomerBadge"
+import { Pagination } from "@/components/Pagination"
 
 export default async function CustomersPage({
     searchParams,
@@ -30,6 +33,7 @@ export default async function CustomersPage({
     const limit = 10
 
     const { data: customers, count } = await getCustomers(query, page, limit, { city, tag })
+    const totalPages = Math.ceil(count / limit)
 
     return (
         <div className="flex flex-col gap-6 w-full max-w-[1600px] mx-auto">
@@ -55,6 +59,25 @@ export default async function CustomersPage({
                         </Button>
                     </div>
                 </div>
+            </div>
+
+            {/* Search Bar */}
+            <div className="flex items-center gap-3 bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+                <Search className="h-5 w-5 text-gray-400" />
+                <form className="flex-1">
+                    <Input
+                        name="q"
+                        type="text"
+                        placeholder="Search by name, phone, email, or customer ID (e.g. 0115)..."
+                        defaultValue={query}
+                        className="border-0 shadow-none focus-visible:ring-0 h-10 text-base placeholder:text-gray-400"
+                    />
+                </form>
+                {query && (
+                    <Button variant="ghost" size="sm" asChild className="text-gray-400 hover:text-gray-600">
+                        <Link href="/customers">Clear</Link>
+                    </Button>
+                )}
             </div>
 
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
@@ -87,13 +110,18 @@ export default async function CustomersPage({
                                 </TableRow>
                             ) : (
                                 customers?.map((customer) => (
-                                    <TableRow key={customer.id} className="hover:bg-gray-50/80 transition-colors border-b last:border-0 border-gray-100">
+                                    <ClickableRow key={customer.id} href={`/customers/${customer.id}`} className="hover:bg-gray-50/80 transition-colors border-b last:border-0 border-gray-100">
                                         <TableCell>
                                             <div className="h-9 w-9 border border-gray-200 rounded-full flex items-center justify-center bg-primary/10 text-primary font-medium">
                                                 {customer.name.substring(0, 2).toUpperCase()}
                                             </div>
                                         </TableCell>
-                                        <TableCell className="font-medium text-gray-900 whitespace-nowrap">{customer.name}</TableCell>
+                                        <TableCell>
+                                            <div className="flex flex-col gap-1">
+                                                <span className="font-medium text-gray-900 whitespace-nowrap">{customer.name}</span>
+                                                <CustomerBadge code={customer.customer_code} />
+                                            </div>
+                                        </TableCell>
                                         <TableCell>
                                             <div className="flex flex-col">
                                                 <span className="text-sm text-gray-900 whitespace-nowrap">{customer.phone}</span>
@@ -102,29 +130,30 @@ export default async function CustomersPage({
                                         <TableCell className="text-gray-600 whitespace-nowrap">{customer.city || '-'}</TableCell>
                                         <TableCell className="text-center">
                                             <Badge variant="secondary" className="bg-gray-100 text-gray-700 font-normal">
-                                                {customer.total_policies || 0} Active
+                                                {customer.total_policies || 0} Policies
                                             </Badge>
                                         </TableCell>
                                         <TableCell className="text-right">
                                             <div className="flex items-center justify-end gap-2">
-                                                <Button variant="ghost" size="sm" asChild className="text-gray-500 hover:text-primary">
-                                                    <Link href={`/customers/${customer.id}`}>
-                                                        View
-                                                    </Link>
-                                                </Button>
                                                 <CustomerActions id={customer.id} />
                                             </div>
                                         </TableCell>
-                                    </TableRow>
+                                    </ClickableRow>
                                 ))
                             )}
                         </TableBody>
                     </Table>
                 </div>
+
+                {totalPages > 1 && (
+                    <div className="border-t border-gray-100 bg-gray-50/30">
+                        <Pagination totalPages={totalPages} />
+                    </div>
+                )}
             </div>
 
             <div className="text-xs text-gray-400 text-center">
-                Showing {customers?.length} results
+                Showing {customers?.length} of {count} results
             </div>
         </div>
     )

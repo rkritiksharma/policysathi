@@ -1,8 +1,9 @@
 
-import { getCompanies, createCompany } from './actions'
+import { getCompaniesWithPolicyCount, createCompany, deleteCompany } from './actions'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Badge } from "@/components/ui/badge"
 import {
     Table,
     TableBody,
@@ -20,11 +21,10 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog"
-import { Plus, ExternalLink } from 'lucide-react'
+import { Plus, ExternalLink, Trash2, Building } from 'lucide-react'
 import Link from 'next/link'
-
-// Client component wrapper for the form could be separated, but for simplicity:
-import { SubmitButton } from '@/components/SubmitButton' // We need to create this reusable component or define inline
+import { SubmitButton } from '@/components/SubmitButton'
+import { revalidatePath } from 'next/cache'
 
 function CreateCompanyDialog() {
     return (
@@ -77,46 +77,77 @@ function CreateCompanyDialog() {
 }
 
 export default async function CompaniesPage() {
-    const { data: companies, error } = await getCompanies()
+    const { data: companies, error } = await getCompaniesWithPolicyCount()
 
     return (
         <div className="flex flex-col gap-4">
             <div className="flex items-center justify-between">
-                <h1 className="text-3xl font-serif font-bold tracking-tight text-primary">Insurance Companies</h1>
+                <div>
+                    <h1 className="text-3xl font-serif font-bold tracking-tight text-primary">Insurance Companies</h1>
+                    <p className="text-sm text-gray-500 font-medium">Manage insurance providers and their details</p>
+                </div>
                 <CreateCompanyDialog />
             </div>
 
-            <div className="border rounded-md">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                 <Table>
-                    <TableHeader>
+                    <TableHeader className="bg-gray-50/80">
                         <TableRow>
-                            <TableHead>Name</TableHead>
-                            <TableHead>Type</TableHead>
-                            <TableHead>Portal</TableHead>
-                            <TableHead>Support</TableHead>
+                            <TableHead className="font-semibold text-gray-700">Name</TableHead>
+                            <TableHead className="font-semibold text-gray-700">Type</TableHead>
+                            <TableHead className="font-semibold text-gray-700">Portal</TableHead>
+                            <TableHead className="font-semibold text-gray-700">Support</TableHead>
+                            <TableHead className="text-center font-semibold text-gray-700">Policies</TableHead>
+                            <TableHead className="text-right font-semibold text-gray-700">Actions</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {companies?.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={4} className="h-24 text-center">
-                                    No companies found.
+                                <TableCell colSpan={6} className="h-24 text-center">
+                                    <div className="flex flex-col items-center gap-2 py-8">
+                                        <Building className="h-10 w-10 text-gray-300" />
+                                        <p className="text-gray-500">No companies found. Add your first company.</p>
+                                    </div>
                                 </TableCell>
                             </TableRow>
                         ) : (
                             companies?.map((company: any) => (
-                                <TableRow key={company.id}>
+                                <TableRow key={company.id} className="hover:bg-gray-50/80 transition-colors">
                                     <TableCell className="font-medium">{company.name}</TableCell>
-                                    <TableCell>{company.type}</TableCell>
+                                    <TableCell>
+                                        <Badge variant="secondary" className="font-normal">{company.type}</Badge>
+                                    </TableCell>
                                     <TableCell>
                                         {company.portal_url && (
-                                            <Link href={company.portal_url} target="_blank" className="flex items-center text-primary hover:underline">
+                                            <Link href={company.portal_url} target="_blank" className="flex items-center text-primary hover:underline text-sm">
                                                 Link <ExternalLink className="ml-1 h-3 w-3" />
                                             </Link>
                                         )}
                                     </TableCell>
-                                    <TableCell>
+                                    <TableCell className="text-sm text-gray-600">
                                         {company.support_phone} {company.support_email && `| ${company.support_email}`}
+                                    </TableCell>
+                                    <TableCell className="text-center">
+                                        <Badge variant="outline" className="font-mono">
+                                            {company.policy_count}
+                                        </Badge>
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                        <form action={async () => {
+                                            'use server'
+                                            await deleteCompany(company.id)
+                                        }}>
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                className="h-8 w-8 p-0 text-gray-400 hover:text-red-500"
+                                                type="submit"
+                                                title={company.policy_count > 0 ? 'Cannot delete: has linked policies' : 'Delete company'}
+                                            >
+                                                <Trash2 className="h-4 w-4" />
+                                            </Button>
+                                        </form>
                                     </TableCell>
                                 </TableRow>
                             ))

@@ -26,7 +26,7 @@ export async function getCustomers(
         .range((page - 1) * limit, page * limit - 1)
 
     if (query) {
-        queryBuilder = queryBuilder.or(`name.ilike.%${query}%,phone.ilike.%${query}%,email.ilike.%${query}%`)
+        queryBuilder = queryBuilder.or(`name.ilike.%${query}%,phone.ilike.%${query}%,email.ilike.%${query}%,customer_code.ilike.%${query}%`)
     }
 
     if (filters?.city) {
@@ -198,7 +198,8 @@ export async function getCustomerPolicies(customerId: string) {
         vehicle_reg: p.vehicle_reg_no || 'N/A',
         expiry: p.expiry_date,
         premium: p.premium_total || 0,
-        status: p.status
+        status: p.status,
+        pdf_url: p.pdf_url
     })) || []
 }
 
@@ -214,4 +215,50 @@ export async function getAllCustomersForExport() {
         .order('created_at', { ascending: false })
 
     return data || []
+}
+
+export async function createCustomerInline(formData: FormData) {
+    try {
+        const { supabase, user } = await getAuthenticatedUser()
+
+        const name = getFormString(formData, 'name')
+        const phone = getFormString(formData, 'phone')
+        const email = getFormString(formData, 'email')
+        const city = getFormString(formData, 'city')
+
+        if (!name || !phone) {
+            return { error: 'Name and Phone are required' }
+        }
+
+        // Check for existing customer
+        const { data: existingCustomers } = await supabase
+            .from('customers')
+            .select('id')
+            .eq('agent_id', user.id)
+            .eq('phone', phone)
+            .limit(1)
+
+        if (existingCustomers && existingCustomers.length > 0) {
+            return { error: 'Customer with this phone number already exists.' }
+        }
+
+        const { data, error } = await supabase.from('customers').insert({
+            name,
+            phone,
+            email: email || null,
+            city: city || null,
+            agent_id: user.id
+        }).select().single()
+
+        if (error) {
+            console.error('Error creating customer inline:', error)
+            return { error: 'Failed to create customer' }
+        }
+
+        revalidatePath('/customers')
+        revalidatePath('/policies/new')
+        return { success: true, customer: data }
+    } catch (err: any) {
+        return { error: err.message || 'An error occurred' }
+    }
 }

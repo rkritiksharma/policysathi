@@ -7,6 +7,7 @@ import { universalSearch } from '@/app/(dashboard)/dashboard/actions'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { format } from 'date-fns'
+import { CustomerBadge } from '@/components/CustomerBadge'
 
 export function UniversalSearch({ className }: { className?: string }) {
     const [query, setQuery] = useState('')
@@ -130,15 +131,18 @@ export function UniversalSearch({ className }: { className?: string }) {
                                     href={`/customers/${customer.id}`}
                                     onClick={() => setIsOpen(false)}
                                     className={`flex items-center gap-3 p-3 rounded-xl transition-colors ${allItems.findIndex(i => i.id === customer.id && i.type === 'customer') === activeIndex
-                                            ? 'bg-primary/5 border-primary/20'
-                                            : 'hover:bg-gray-50'
+                                        ? 'bg-primary/5 border-primary/20'
+                                        : 'hover:bg-gray-50'
                                         }`}
                                 >
                                     <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold">
                                         {customer.name?.charAt(0)?.toUpperCase()}
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <p className="font-medium text-gray-900 truncate">{customer.name}</p>
+                                        <div className="flex items-center gap-2">
+                                            <p className="font-medium text-gray-900 truncate">{customer.name}</p>
+                                            <CustomerBadge code={customer.customer_code} />
+                                        </div>
                                         <p className="text-sm text-gray-500 flex items-center gap-1">
                                             <Phone className="h-3 w-3" /> {customer.phone}
                                         </p>
@@ -165,8 +169,8 @@ export function UniversalSearch({ className }: { className?: string }) {
                                     href={`/policies/${policy.id}`}
                                     onClick={() => setIsOpen(false)}
                                     className={`flex items-center gap-3 p-3 rounded-xl transition-colors ${allItems.findIndex(i => i.id === policy.id && i.type === 'policy') === activeIndex
-                                            ? 'bg-primary/5 border-primary/20'
-                                            : 'hover:bg-gray-50'
+                                        ? 'bg-primary/5 border-primary/20'
+                                        : 'hover:bg-gray-50'
                                         }`}
                                 >
                                     <div className={`w-10 h-10 rounded-full flex items-center justify-center ${policy.status === 'Active' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'
@@ -176,6 +180,7 @@ export function UniversalSearch({ className }: { className?: string }) {
                                     <div className="flex-1 min-w-0">
                                         <p className="font-medium text-gray-900 truncate">
                                             {policy.customers?.name}
+                                            {policy.customers?.customer_code && <span className="text-xs text-primary/70 ml-1 font-mono bg-primary/5 px-1 rounded">{policy.customers.customer_code}</span>}
                                             <span className="text-xs text-gray-400 ml-2 font-mono">{policy.policy_number}</span>
                                         </p>
                                         <p className="text-sm text-gray-500 flex items-center gap-2">

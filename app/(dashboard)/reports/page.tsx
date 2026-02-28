@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { getPolicies, getAllPoliciesForExport } from '../policies/actions'
 import { Policy } from '@/types'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
@@ -155,8 +156,10 @@ function PolicyTable({ policies }: { policies: Policy[] }) {
                                     </Badge>
                                 </TableCell>
                                 <TableCell className="text-right">
-                                    <Button variant="outline" size="sm" className="h-8 w-8 p-0 text-gray-500 hover:text-primary hover:border-primary/30">
-                                        <FileSpreadsheet className="h-4 w-4" />
+                                    <Button variant="outline" size="sm" className="h-8 w-8 p-0 text-gray-500 hover:text-primary hover:border-primary/30" asChild>
+                                        <Link href={`/policies/${policy.id}`}>
+                                            <FileSpreadsheet className="h-4 w-4" />
+                                        </Link>
                                     </Button>
                                 </TableCell>
                             </TableRow>

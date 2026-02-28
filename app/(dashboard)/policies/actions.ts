@@ -1,6 +1,7 @@
 ﻿'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { Policy } from '@/types'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
@@ -30,7 +31,7 @@ export async function getPolicies({ query = '', page = 1, limit = 10, status, co
         .from('policies')
         .select(`
             *,
-            customers (name, phone),
+            customers (name, phone, customer_code),
             companies (name)
         `, { count: 'exact' })
         .eq('agent_id', user.id)
@@ -38,8 +39,8 @@ export async function getPolicies({ query = '', page = 1, limit = 10, status, co
         .range((page - 1) * limit, page * limit - 1)
 
     if (query) {
-        // Search by policy number or vehicle reg
-        queryBuilder = queryBuilder.or(`policy_number.ilike.%${query}%,vehicle_reg_no.ilike.%${query}%`)
+        // Search by policy number, vehicle reg, customer name, or customer code
+        queryBuilder = queryBuilder.or(`policy_number.ilike.%${query}%,vehicle_reg_no.ilike.%${query}%,customers.name.ilike.%${query}%,customers.customer_code.ilike.%${query}%`)
     }
 
     if (status && status !== 'all') {
@@ -115,13 +116,14 @@ export async function createPolicy(formData: FormData) {
 
     if (file && file.size > 0) {
         try {
+            const adminSupabase = createAdminClient()
             // Create unique path: user_id/timestamp-filename
             const fileExt = file.name.split('.').pop()
             const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`
             const filePath = `${user.id}/${fileName}`
 
-            const { error: uploadError } = await supabase.storage
-                .from('policy-docs')
+            const { error: uploadError } = await adminSupabase.storage
+                .from('policy-documents')
                 .upload(filePath, file)
 
             if (uploadError) {
@@ -129,8 +131,8 @@ export async function createPolicy(formData: FormData) {
                 // Continue without file - don't fail the entire policy creation
             } else {
                 // Get Public URL only if upload succeeded
-                const { data: { publicUrl } } = supabase.storage
-                    .from('policy-docs')
+                const { data: { publicUrl } } = adminSupabase.storage
+                    .from('policy-documents')
                     .getPublicUrl(filePath)
                 pdf_url = publicUrl
             }

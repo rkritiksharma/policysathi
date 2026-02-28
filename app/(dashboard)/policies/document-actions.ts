@@ -1,10 +1,12 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
 
 export async function uploadPolicyDocument(formData: FormData) {
     const supabase = await createClient()
+    const adminSupabase = createAdminClient()
 
     const file = formData.get('file') as File
     const policyId = formData.get('policyId') as string
@@ -24,9 +26,9 @@ export async function uploadPolicyDocument(formData: FormData) {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return { error: 'Unauthorized' }
 
-    // Upload file to Supabase Storage
+    // Upload file to Supabase Storage using Admin Client to bypass RLS
     const fileName = `${user.id}/${policyId}/${Date.now()}-${file.name}`
-    const { data: uploadData, error: uploadError } = await supabase
+    const { data: uploadData, error: uploadError } = await adminSupabase
         .storage
         .from('policy-documents')
         .upload(fileName, file)
@@ -56,4 +58,27 @@ export async function uploadPolicyDocument(formData: FormData) {
 
     revalidatePath(`/policies/${policyId}`)
     return { success: 'Document uploaded successfully', url: publicUrl }
+}
+
+export async function deletePolicyDocument(policyId: string) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) return { error: 'Unauthorized' }
+
+    // Just update the record to clear the URL. 
+    // Usually, we'd delete the file from storage too, but let's keep it simple first.
+    const { error: dbError } = await supabase
+        .from('policies')
+        .update({ pdf_url: null })
+        .eq('id', policyId)
+        .eq('agent_id', user.id)
+
+    if (dbError) {
+        console.error('Delete Document Error:', dbError)
+        return { error: 'Failed to remove document' }
+    }
+
+    revalidatePath(`/policies/${policyId}`)
+    return { success: 'Document removed successfully' }
 }

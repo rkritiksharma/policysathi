@@ -20,6 +20,7 @@ export interface Agent {
 export interface Customer {
     id: string
     agent_id: string
+    customer_code?: string
     name: string
     phone: string | null
     email: string | null
