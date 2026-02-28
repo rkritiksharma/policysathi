@@ -1,4 +1,4 @@
-import { getDashboardStats, getUpcomingRenewals, getOverduePolicies, getExpiringNotifications, getRevenueStats } from './actions'
+import { getDashboardStats, getUpcomingRenewals, getOverduePolicies, getExpiringNotifications, getRevenueStats, getCustomerInsights } from './actions'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
@@ -14,17 +14,20 @@ import { DashboardFilter } from "@/components/DashboardFilter"
 import { ChartFilter } from "@/components/ChartFilter"
 import { EmptyState } from "@/components/EmptyState"
 import { AutomationButton } from "@/components/AutomationButton"
+import { InsightsGrid } from "@/components/InsightsGrid"
+
 
 export default async function DashboardPage({ searchParams }: { searchParams: Promise<{ days?: string; range?: string }> }) {
     const params = await searchParams
     const daysFilter = params.days ? parseInt(params.days) : 30 // Default 30 days
     const chartRange = params.range || '6M'
-    const [stats, revenueStats, upcoming, overdue, expiringPolicies] = await Promise.all([
+    const [stats, revenueStats, upcoming, overdue, expiringPolicies, insights] = await Promise.all([
         getDashboardStats(),
         getRevenueStats(chartRange),
         getUpcomingRenewals(daysFilter),
         getOverduePolicies(),
-        getExpiringNotifications()
+        getExpiringNotifications(),
+        getCustomerInsights()
     ])
 
     // Determine alert banner content (Mock logic for now based on design)
@@ -36,11 +39,12 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
         <div className="flex flex-col gap-4 md:gap-6 w-full max-w-[1600px] mx-auto px-4 md:px-0 pb-20 md:pb-6">
 
 
+
             {/* Alert Banner - Urgency Focus */}
             {expiringCount > 0 && (
-                <div className="w-full bg-red-50 border border-red-100 text-red-800 px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl flex items-center justify-center gap-2 shadow-sm text-sm md:text-base">
-                    <AlertTriangle className="h-4 w-4 md:h-5 md:w-5 text-red-600 flex-shrink-0" />
-                    <span className="font-bold text-sm md:text-lg text-red-900">⚠️ {expiringCount} policies expiring in next {expiringDays} days!</span>
+                <div className="w-full bg-red-50/80 border border-red-100 text-red-800 px-3 md:px-4 py-2 md:py-3 rounded-xl flex items-center justify-center gap-2 shadow-sm text-sm md:text-base">
+                    <AlertTriangle className="h-4 w-4 md:h-5 md:w-5 text-red-600 flex-shrink-0 animate-pulse" />
+                    <span className="font-bold text-sm md:text-lg text-red-900 leading-tight">⚠️ {expiringCount} policies expiring in next {expiringDays} days!</span>
                     <Link href="/policies?status=Active&sort=expiry_asc">
                         <Button variant="link" className="text-red-800 underline font-semibold h-auto p-0 ml-2 hover:text-red-900 text-xs md:text-sm" suppressHydrationWarning>View Now</Button>
                     </Link>
@@ -62,54 +66,66 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
                 </div>
             </div>
 
-            {/* Stats Cards - Low Cognitive Load */}
+            {/* Stats Cards - Premium Visuals */}
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                 <Link href="/customers" className="block">
-                    <Card className="glass-card border-0 border-l-4 border-l-primary shadow-sm hover:shadow-md transition-all cursor-pointer h-full">
+                    <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-blue-50 to-indigo-50/30 shadow-sm hover:shadow-md transition-all cursor-pointer h-full group">
+                        <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform">
+                            <Users className="h-24 w-24 text-blue-600" />
+                        </div>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium text-gray-600">Total Customers</CardTitle>
-                            <Users className="h-4 w-4 text-primary" />
+                            <CardTitle className="text-sm font-semibold text-blue-700 uppercase tracking-wider">Total Customers</CardTitle>
+                            <Users className="h-4 w-4 text-blue-600" />
                         </CardHeader>
                         <CardContent>
-                            <div className="text-3xl font-bold text-gray-900 font-serif">{stats.totalCustomers?.toLocaleString()}</div>
+                            <div className="text-4xl font-bold text-gray-900 font-serif">{stats.totalCustomers?.toLocaleString()}</div>
                         </CardContent>
                     </Card>
                 </Link>
 
                 <Link href="/policies" className="block">
-                    <Card className="glass-card border-0 border-l-4 border-l-primary/60 shadow-sm hover:shadow-md transition-all cursor-pointer h-full">
+                    <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-green-50 to-emerald-50/30 shadow-sm hover:shadow-md transition-all cursor-pointer h-full group">
+                        <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform">
+                            <FileText className="h-24 w-24 text-green-600" />
+                        </div>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium text-gray-600">Total Policies</CardTitle>
-                            <FileText className="h-4 w-4 text-primary/60" />
+                            <CardTitle className="text-sm font-semibold text-green-700 uppercase tracking-wider">Total Policies</CardTitle>
+                            <FileText className="h-4 w-4 text-green-600" />
                         </CardHeader>
                         <CardContent>
-                            <div className="text-3xl font-bold text-gray-900 font-serif">{stats.totalPolicies?.toLocaleString()}</div>
+                            <div className="text-4xl font-bold text-gray-900 font-serif">{stats.totalPolicies?.toLocaleString()}</div>
                         </CardContent>
                     </Card>
                 </Link>
 
                 {/* Amber / Due Card */}
                 <Link href="/policies?status=Active" className="block">
-                    <Card className="glass-card bg-amber-50/50 border-0 border-l-4 border-l-amber-500 shadow-sm hover:shadow-md transition-all cursor-pointer h-full">
+                    <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-amber-50 to-orange-50/30 shadow-sm hover:shadow-md transition-all cursor-pointer h-full group">
+                        <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform">
+                            <Clock className="h-24 w-24 text-amber-600" />
+                        </div>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium text-amber-900">Due Soon (30 Days)</CardTitle>
+                            <CardTitle className="text-sm font-semibold text-amber-700 uppercase tracking-wider">Due Soon (30 Days)</CardTitle>
                             <Clock className="h-4 w-4 text-amber-600" />
                         </CardHeader>
                         <CardContent>
-                            <div className="text-3xl font-bold text-amber-900 font-serif">{stats.duePolicies}</div>
+                            <div className="text-4xl font-bold text-amber-900 font-serif">{stats.duePolicies}</div>
                         </CardContent>
                     </Card>
                 </Link>
 
                 {/* Red / Expired Card */}
                 <Link href="/policies?status=Expired" className="block">
-                    <Card className="glass-card bg-red-50/50 border-0 border-l-4 border-l-red-600 shadow-sm hover:shadow-md transition-all cursor-pointer h-full">
+                    <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-red-50 to-rose-50/30 shadow-sm hover:shadow-md transition-all cursor-pointer h-full group">
+                        <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform">
+                            <AlertCircle className="h-24 w-24 text-red-600" />
+                        </div>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium text-red-900">Expired Policies</CardTitle>
+                            <CardTitle className="text-sm font-semibold text-red-700 uppercase tracking-wider">Expired Policies</CardTitle>
                             <AlertCircle className="h-4 w-4 text-red-600" />
                         </CardHeader>
                         <CardContent>
-                            <div className="text-3xl font-bold text-red-900 font-serif">{stats.expiredPolicies}</div>
+                            <div className="text-4xl font-bold text-red-900 font-serif">{stats.expiredPolicies}</div>
                         </CardContent>
                     </Card>
                 </Link>
@@ -174,6 +190,22 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
                 <div className="lg:col-span-1">
                     <BirthdayReminders />
                 </div>
+            </div>
+
+            {/* Smart Insights Section */}
+            <div>
+                <div className="flex items-center justify-between mb-3 md:mb-4">
+                    <div>
+                        <h2 className="text-base md:text-lg font-semibold text-gray-800">Smart Insights</h2>
+                        <p className="text-xs text-gray-400">Real-time analytics for your agency</p>
+                    </div>
+                </div>
+                <InsightsGrid
+                    marketShare={insights.marketShare}
+                    topCustomers={insights.topCustomers}
+                    missedRenewals={insights.missedRenewals}
+                    growth={insights.growth}
+                />
             </div>
 
             {/* Actionable Tables */}

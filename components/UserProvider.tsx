@@ -3,8 +3,11 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
 
 interface UserData {
+    id?: string
     name: string
     email: string
+    agency_name?: string
+    role?: string
 }
 
 interface UserContextType {
@@ -14,11 +17,13 @@ interface UserContextType {
 
 const UserContext = createContext<UserContextType>({ user: null, loading: true })
 
-export function UserProvider({ children }: { children: ReactNode }) {
-    const [user, setUser] = useState<UserData | null>(null)
-    const [loading, setLoading] = useState(true)
+export function UserProvider({ children, initialUserData }: { children: ReactNode, initialUserData?: UserData }) {
+    const [user, setUser] = useState<UserData | null>(initialUserData || null)
+    const [loading, setLoading] = useState(!initialUserData)
 
     useEffect(() => {
+        if (initialUserData) return // Skip fetch if data provided from server
+
         const fetchUser = async () => {
             try {
                 const res = await fetch('/api/auth/me')
@@ -33,7 +38,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
             }
         }
         fetchUser()
-    }, [])
+    }, [initialUserData])
 
     return (
         <UserContext.Provider value={{ user, loading }}>

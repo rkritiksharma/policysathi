@@ -1,11 +1,11 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { getAuthenticatedUser } from '@/lib/supabase/auth'
 import { revalidatePath } from 'next/cache'
 
 export async function uploadPolicyDocument(formData: FormData) {
-    const supabase = await createClient()
+    const { supabase, user } = await getAuthenticatedUser()
     const adminSupabase = createAdminClient()
 
     const file = formData.get('file') as File
@@ -23,8 +23,6 @@ export async function uploadPolicyDocument(formData: FormData) {
         return { error: 'Only PDF files are allowed' }
     }
 
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return { error: 'Unauthorized' }
 
     // Upload file to Supabase Storage using Admin Client to bypass RLS
     const fileName = `${user.id}/${policyId}/${Date.now()}-${file.name}`
@@ -61,10 +59,9 @@ export async function uploadPolicyDocument(formData: FormData) {
 }
 
 export async function deletePolicyDocument(policyId: string) {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const { supabase, user } = await getAuthenticatedUser() // Modified this line
 
-    if (!user) return { error: 'Unauthorized' }
+    if (!user) return { error: 'Unauthorized' } // Kept this check
 
     // Just update the record to clear the URL. 
     // Usually, we'd delete the file from storage too, but let's keep it simple first.

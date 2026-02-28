@@ -1,11 +1,11 @@
 
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
+import { getAuthenticatedUser } from '@/lib/supabase/auth'
 import { revalidatePath } from 'next/cache'
 
 export async function getCompanies() {
-    const supabase = await createClient()
+    const { supabase } = await getAuthenticatedUser()
 
     const { data, error } = await supabase
         .from('companies')
@@ -20,9 +20,7 @@ export async function getCompanies() {
 }
 
 export async function getCompaniesWithPolicyCount() {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return { data: [], error: 'Not authenticated' }
+    const { supabase, user } = await getAuthenticatedUser()
 
     const { data: companies, error } = await supabase
         .from('companies')
@@ -51,7 +49,7 @@ export async function getCompaniesWithPolicyCount() {
 }
 
 export async function createCompany(formData: FormData) {
-    const supabase = await createClient()
+    const { supabase } = await getAuthenticatedUser()
 
     const name = formData.get('name') as string
     const type = formData.get('type') as string
@@ -77,7 +75,7 @@ export async function createCompany(formData: FormData) {
 }
 
 export async function updateCompany(id: string, formData: FormData) {
-    const supabase = await createClient()
+    const { supabase } = await getAuthenticatedUser()
 
     const name = formData.get('name') as string
     const type = formData.get('type') as string
@@ -98,7 +96,7 @@ export async function updateCompany(id: string, formData: FormData) {
 }
 
 export async function deleteCompany(id: string) {
-    const supabase = await createClient()
+    const { supabase } = await getAuthenticatedUser()
 
     // Check if company has policies
     const { count } = await supabase
@@ -118,7 +116,7 @@ export async function deleteCompany(id: string) {
 }
 
 export async function createCompanyInline(formData: FormData) {
-    const supabase = await createClient()
+    const { supabase } = await getAuthenticatedUser()
 
     const name = formData.get('name') as string
     const type = formData.get('type') as string

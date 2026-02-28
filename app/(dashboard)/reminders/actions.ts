@@ -1,11 +1,12 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
+import { getAuthenticatedUser } from '@/lib/supabase/auth'
+import { cache } from 'react'
+import { addDays, subDays } from 'date-fns'
 import { revalidatePath } from 'next/cache'
 
 export async function createReminder(formData: FormData) {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const { supabase, user } = await getAuthenticatedUser()
 
     if (!user) return { error: 'Unauthorized' }
 
@@ -37,12 +38,9 @@ export async function createReminder(formData: FormData) {
 export async function checkExpiringPoliciesManual() {
     // This is a manual trigger for the logic that would normally be a cron job
     // Useful for testing or if pg_cron is not available on free tier
-    const supabase = await createClient()
-
     // We can't call PL/pgSQL functions easily via client if they are not exposed via RPC 
     // So we'll replicate the logic in TS for the manual trigger button
-
-    const { data: { user } } = await supabase.auth.getUser()
+    const { supabase, user } = await getAuthenticatedUser()
     if (!user) return { error: 'Unauthorized' }
 
     const today = new Date()

@@ -14,6 +14,7 @@ import {
 import { useUser } from '@/components/UserProvider'
 import { getInitials } from '@/lib/utils'
 import Link from 'next/link'
+import { User, Settings, LogOut } from 'lucide-react'
 
 interface UserMenuProps {
     /** Avatar size class, e.g. "h-7 w-7" or "h-8 w-8" */
@@ -63,16 +64,19 @@ export function UserMenu({
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
-                    <Link href="/profile" className="w-full cursor-pointer">
-                        Profile
+                    <Link href="/profile" className="w-full cursor-pointer flex items-center">
+                        <User className="mr-2 h-4 w-4" />
+                        <span>Profile</span>
                     </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => router.push('/settings')} className="cursor-pointer">
-                    Settings
+                <DropdownMenuItem onClick={() => router.push('/settings')} className="cursor-pointer flex items-center">
+                    <Settings className="mr-2 h-4 w-4" />
+                    <span>Settings</span>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="text-red-600 focus:text-red-600 cursor-pointer" onSelect={handleLogout}>
-                    Log out
+                <DropdownMenuItem className="text-red-600 focus:text-red-600 cursor-pointer flex items-center" onSelect={handleLogout}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Log out</span>
                 </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>

@@ -22,10 +22,7 @@ export type GetPoliciesParams = {
 }
 
 export async function getPolicies({ query = '', page = 1, limit = 10, status, company_id, expiry_days, is_overdue, fromDate, toDate }: GetPoliciesParams) {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) return { data: [], count: 0, error: 'User not authenticated' }
+    const { supabase, user } = await getAuthenticatedUser()
 
     let queryBuilder = supabase
         .from('policies')
@@ -76,10 +73,7 @@ export async function getPolicies({ query = '', page = 1, limit = 10, status, co
 }
 
 export async function createPolicy(formData: FormData) {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) throw new Error('User not authenticated')
+    const { supabase, user } = await getAuthenticatedUser()
 
     const customer_id = formData.get('customer_id') as string
     const company_id = formData.get('company_id') as string
@@ -228,10 +222,7 @@ export async function createPolicy(formData: FormData) {
 }
 
 export async function deletePolicy(id: string) {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) throw new Error('User not authenticated')
+    const { supabase, user } = await getAuthenticatedUser()
 
     const { error } = await supabase
         .from('policies')
@@ -439,10 +430,7 @@ export const getPolicyById = cache(async (id: string) => {
 })
 
 export async function getAllPoliciesForExport(params: GetPoliciesParams = {}) {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) return []
+    const { supabase, user } = await getAuthenticatedUser()
 
     const { query, status, company_id, fromDate, toDate } = params
 

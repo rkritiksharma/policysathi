@@ -10,13 +10,26 @@ import { createClient } from '@/lib/supabase/server'
  */
 export const getAuthenticatedUser = cache(async () => {
     const supabase = await createClient()
-    // Reverting to getUser to satisfy Next.js/Supabase security warnings.
-    // Exploring connection pooling/caching to optimize this instead.
     const { data: { user } } = await supabase.auth.getUser()
 
     if (!user) {
         throw new Error('User not authenticated')
     }
 
-    return { supabase, user }
+    // Fetch basic profile details to avoid multiple round-trips later
+    const { data: agent } = await supabase
+        .from('agents')
+        .select('name, agency_name, role')
+        .eq('id', user.id)
+        .single()
+
+    return {
+        supabase,
+        user: {
+            ...user,
+            name: agent?.name || user.user_metadata?.name || 'Agent',
+            agency_name: agent?.agency_name,
+            role: agent?.role
+        }
+    }
 })

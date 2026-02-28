@@ -1,7 +1,7 @@
 
 'use client'
 
-import { Bell, AlertTriangle } from 'lucide-react'
+import { Bell, AlertTriangle, FileText } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
     DropdownMenu,
@@ -50,8 +50,11 @@ export function Header() {
     return (
         <header className="flex h-14 md:h-16 items-center gap-2 md:gap-4 border-b border-gray-100 bg-white/50 px-3 md:px-8 backdrop-blur-sm">
             {/* Left Section: Title */}
-            <div className="flex items-center gap-2 md:gap-4 flex-shrink-0">
-                <h1 className="font-serif text-base md:text-xl font-semibold text-gray-800">Overview</h1>
+            <div className="flex items-center gap-3 md:gap-4 flex-shrink-0">
+                <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center md:hidden">
+                    <FileText className="h-4 w-4 text-primary" />
+                </div>
+                <h1 className="font-serif text-lg md:text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600 tracking-tight">Overview</h1>
             </div>
 
             {/* Middle Section: Universal Search (Centered) */}

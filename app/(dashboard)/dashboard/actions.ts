@@ -77,37 +77,45 @@ export async function universalSearch(query: string) {
     const { supabase, user } = await getAuthenticatedUser()
     const searchTerm = query.trim().toLowerCase()
 
-    // 1. Search customers by name, phone, email, or customer_code
-    const { data: customers } = await supabase
-        .from('customers')
-        .select('id, name, phone, email, customer_code')
-        .eq('agent_id', user.id)
-        .or(`name.ilike.%${searchTerm}%,phone.ilike.%${searchTerm}%,email.ilike.%${searchTerm}%,customer_code.ilike.%${searchTerm}%`)
-        .limit(5)
+    // Run all search queries in parallel for better performance
+    const [
+        { data: customers },
+        { data: policies },
+        { data: policiesByCustomerName },
+        { data: policiesByCustomerCode }
+    ] = await Promise.all([
+        // 1. Search customers by name, phone, email, or customer_code
+        supabase
+            .from('customers')
+            .select('id, name, phone, email, customer_code')
+            .eq('agent_id', user.id)
+            .or(`name.ilike.%${searchTerm}%,phone.ilike.%${searchTerm}%,email.ilike.%${searchTerm}%,customer_code.ilike.%${searchTerm}%`)
+            .limit(5),
 
-    // 2. Search policies by policy number or vehicle reg no
-    const { data: policies } = await supabase
-        .from('policies')
-        .select('id, policy_number, vehicle_reg_no, policy_type, expiry_date, status, customers(id, name, phone, customer_code), companies(name)')
-        .eq('agent_id', user.id)
-        .or(`policy_number.ilike.%${searchTerm}%,vehicle_reg_no.ilike.%${searchTerm}%`)
-        .limit(5)
+        // 2. Search policies by policy number or vehicle reg no
+        supabase
+            .from('policies')
+            .select('id, policy_number, vehicle_reg_no, policy_type, expiry_date, status, customers(id, name, phone, customer_code), companies(name)')
+            .eq('agent_id', user.id)
+            .or(`policy_number.ilike.%${searchTerm}%,vehicle_reg_no.ilike.%${searchTerm}%`)
+            .limit(5),
 
-    // 3. Search policies by customer name match
-    const { data: policiesByCustomerName } = await supabase
-        .from('policies')
-        .select('id, policy_number, vehicle_reg_no, policy_type, expiry_date, status, customers!inner(id, name, phone, customer_code), companies(name)')
-        .eq('agent_id', user.id)
-        .ilike('customers.name', `%${searchTerm}%`)
-        .limit(5)
+        // 3. Search policies by customer name match
+        supabase
+            .from('policies')
+            .select('id, policy_number, vehicle_reg_no, policy_type, expiry_date, status, customers!inner(id, name, phone, customer_code), companies(name)')
+            .eq('agent_id', user.id)
+            .ilike('customers.name', `%${searchTerm}%`)
+            .limit(5),
 
-    // 4. Search policies by customer code match
-    const { data: policiesByCustomerCode } = await supabase
-        .from('policies')
-        .select('id, policy_number, vehicle_reg_no, policy_type, expiry_date, status, customers!inner(id, name, phone, customer_code), companies(name)')
-        .eq('agent_id', user.id)
-        .ilike('customers.customer_code', `%${searchTerm}%`)
-        .limit(5)
+        // 4. Search policies by customer code match
+        supabase
+            .from('policies')
+            .select('id, policy_number, vehicle_reg_no, policy_type, expiry_date, status, customers!inner(id, name, phone, customer_code), companies(name)')
+            .eq('agent_id', user.id)
+            .ilike('customers.customer_code', `%${searchTerm}%`)
+            .limit(5)
+    ])
 
     // Merge and deduplicate policies
     const allPolicies = [
@@ -326,4 +334,111 @@ export const getExpiringNotifications = cache(async () => {
         .order('expiry_date', { ascending: true })
 
     return data || []
+})
+
+export const getTodayRenewals = cache(async () => {
+    const { supabase, user } = await getAuthenticatedUser()
+    const today = new Date().toISOString().split('T')[0]
+
+    const { data } = await supabase
+        .from('policies')
+        .select('id, policy_number, vehicle_reg_no, customers(name, phone), companies(name)')
+        .eq('agent_id', user.id)
+        .eq('expiry_date', today)
+        .eq('status', 'Active')
+
+    return data || []
+})
+
+// Smart Customer Insights
+export const getCustomerInsights = cache(async () => {
+    const { supabase, user } = await getAuthenticatedUser()
+    const now = new Date()
+    const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString()
+    const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString()
+    const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0).toISOString()
+    const thirtyDaysAgo = addDays(now, -30).toISOString().split('T')[0]
+
+    const [
+        { data: allPolicies },
+        { data: topCustomersRaw },
+        { data: missedRenewals },
+        { count: thisMonthCount },
+        { count: lastMonthCount }
+    ] = await Promise.all([
+        // All policies with company + premium info
+        supabase.from('policies')
+            .select('premium_total, companies(id, name), status, expiry_date')
+            .eq('agent_id', user.id),
+
+        // Top customers by policy count
+        supabase.from('policies')
+            .select('customer_id, premium_total, customers(id, name, phone)')
+            .eq('agent_id', user.id)
+            .eq('status', 'Active'),
+
+        // Missed renewals: expired > 30 days ago, still not renewed
+        supabase.from('policies')
+            .select('id, policy_number, expiry_date, customers(name, phone)')
+            .eq('agent_id', user.id)
+            .lt('expiry_date', thirtyDaysAgo)
+            .neq('status', 'Renewed')
+            .order('expiry_date', { ascending: false })
+            .limit(5),
+
+        // This month policies
+        supabase.from('policies')
+            .select('id', { count: 'exact', head: true })
+            .eq('agent_id', user.id)
+            .gte('created_at', thisMonthStart),
+
+        // Last month policies
+        supabase.from('policies')
+            .select('id', { count: 'exact', head: true })
+            .eq('agent_id', user.id)
+            .gte('created_at', lastMonthStart)
+            .lte('created_at', lastMonthEnd),
+    ])
+
+    // 1. Company Market Share
+    const companyMap = new Map<string, { name: string; count: number; revenue: number }>()
+    allPolicies?.forEach((p: any) => {
+        const co = p.companies
+        if (!co) return
+        const existing = companyMap.get(co.id) || { name: co.name, count: 0, revenue: 0 }
+        existing.count++
+        existing.revenue += p.premium_total || 0
+        companyMap.set(co.id, existing)
+    })
+    const marketShare = Array.from(companyMap.values())
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 5)
+        .map(c => ({ ...c, revenue: Math.round(c.revenue) }))
+
+    // 2. Top Customers by premium
+    const customerMap = new Map<string, { name: string; phone: string; premium: number; count: number }>()
+    topCustomersRaw?.forEach((p: any) => {
+        const cu = p.customers
+        if (!cu) return
+        const existing = customerMap.get(cu.id) || { name: cu.name, phone: cu.phone, premium: 0, count: 0 }
+        existing.premium += p.premium_total || 0
+        existing.count++
+        customerMap.set(cu.id, existing)
+    })
+    const topCustomers = Array.from(customerMap.values())
+        .sort((a, b) => b.premium - a.premium)
+        .slice(0, 5)
+        .map(c => ({ ...c, premium: Math.round(c.premium) }))
+
+    // 3. Month-over-Month Growth
+    const growth = lastMonthCount && lastMonthCount > 0
+        ? Math.round(((thisMonthCount || 0) - lastMonthCount) / lastMonthCount * 100)
+        : (thisMonthCount || 0) > 0 ? 100 : 0
+
+    return {
+        marketShare,
+        topCustomers,
+        missedRenewals: missedRenewals || [],
+        growth: { thisMonth: thisMonthCount || 0, lastMonth: lastMonthCount || 0, percent: growth }
+    }
 })

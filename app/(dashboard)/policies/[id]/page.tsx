@@ -1,5 +1,5 @@
-import { createClient } from '@/lib/supabase/server'
 import { notFound, redirect } from 'next/navigation'
+import { getAuthenticatedUser } from '@/lib/supabase/auth'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -10,11 +10,9 @@ import { format } from 'date-fns'
 import { DocumentUpload } from '@/components/DocumentUpload'
 import { CustomerBadge } from '@/components/CustomerBadge'
 
-export default async function PolicyDetailsPage({ params }: { params: Promise<{ id: string }> }) {
-    const { id } = await params
-    const supabase = await createClient()
-
-    const { data: { user } } = await supabase.auth.getUser()
+export default async function PolicyDetailPage(props: { params: Promise<{ id: string }> }) {
+    const { id } = await props.params
+    const { supabase, user } = await getAuthenticatedUser()
     if (!user) redirect('/login')
 
     const { data: policy } = await supabase
