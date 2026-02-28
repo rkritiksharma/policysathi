@@ -1,7 +1,9 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
+import { getAuthenticatedUser } from '@/lib/supabase/auth'
 import { revalidatePath } from 'next/cache'
+import { redirect } from 'next/navigation'
+import { cache } from 'react'
 
 export interface Payment {
     id: string
@@ -36,8 +38,7 @@ export interface PolicyWithPayment {
 
 // Get policies for payment overview based on filter
 export async function getFilteredPayments(filter: string = 'due') {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const { supabase, user } = await getAuthenticatedUser()
 
     if (!user) return { error: 'Not authenticated', policies: [] }
 
@@ -82,8 +83,7 @@ export async function getFilteredPayments(filter: string = 'due') {
 
 // Get all policies for payment overview
 export async function getAllPoliciesPaymentStatus() {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const { supabase, user } = await getAuthenticatedUser()
 
     if (!user) return { error: 'Not authenticated', policies: [] }
 
@@ -113,8 +113,7 @@ export async function getAllPoliciesPaymentStatus() {
 
 // Get payment history for a policy
 export async function getPaymentHistory(policyId: string) {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const { supabase, user } = await getAuthenticatedUser()
 
     if (!user) return { error: 'Not authenticated', payments: [] }
 
@@ -135,8 +134,7 @@ export async function getPaymentHistory(policyId: string) {
 
 // Record a new payment
 export async function recordPayment(formData: FormData) {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const { supabase, user } = await getAuthenticatedUser()
 
     if (!user) return { error: 'Not authenticated' }
 
@@ -209,8 +207,7 @@ export async function recordPayment(formData: FormData) {
 
 // Get payment summary stats
 export async function getPaymentStats() {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const { supabase, user } = await getAuthenticatedUser()
 
     if (!user) return { error: 'Not authenticated', stats: null }
 

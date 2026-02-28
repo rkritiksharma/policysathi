@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { getAuthenticatedUser } from '@/lib/supabase/auth'
 import { redirect } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
@@ -9,13 +10,14 @@ import { updatePassword } from './password-actions'
 import { User, Building, Phone, MapPin, FileBadge, Lock } from 'lucide-react'
 
 export default async function ProfilePage() {
-    const supabase = await createClient()
-
-    const { data: { user } } = await supabase.auth.getUser()
+    const { user } = await getAuthenticatedUser()
 
     if (!user) {
         redirect('/login')
     }
+
+    // Re-initialize supabase client for other data operations
+    const supabase = await createClient()
 
     const { data: agent } = await supabase
         .from('agents')

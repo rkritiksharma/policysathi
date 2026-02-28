@@ -53,14 +53,17 @@ export function MobileNav() {
                             key={item.href}
                             href={item.href}
                             className={cn(
-                                "flex flex-col items-center justify-center flex-1 min-h-[64px] gap-1 transition-all duration-200 active:scale-95",
+                                "relative flex flex-col items-center justify-center flex-1 min-h-[64px] gap-1 transition-all duration-200 active:scale-95",
                                 isActive
                                     ? "text-primary"
                                     : "text-gray-500 hover:text-gray-900 active:text-primary"
                             )}
                         >
-                            <Icon className={cn("h-6 w-6", isActive && "fill-current")} />
-                            <span className="text-xs font-medium">{item.title}</span>
+                            {isActive && (
+                                <div className="absolute top-0 left-1/2 -translate-x-1/2 h-1 w-8 bg-primary rounded-b-full shadow-[0_1px_5px_rgba(34,197,94,0.5)]" />
+                            )}
+                            <Icon className={cn("h-6 w-6 transition-all", isActive && "scale-110")} />
+                            <span className={cn("text-[10px] font-bold tracking-tight uppercase", isActive ? "opacity-100" : "opacity-70")}>{item.title}</span>
                         </Link>
                     )
                 })}

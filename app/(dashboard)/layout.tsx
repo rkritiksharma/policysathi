@@ -1,6 +1,5 @@
-'use client'
-
 import { Suspense } from 'react'
+import { getAuthenticatedUser } from '@/lib/supabase/auth'
 
 import { Sidebar } from '@/components/Sidebar'
 import { Header } from '@/components/Header'
@@ -9,20 +8,28 @@ import { MobileNav } from '@/components/MobileNav'
 import { CommandMenu } from '@/components/CommandMenu'
 import { Bell } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { useRouter } from 'next/navigation'
 import { UserProvider } from '@/components/UserProvider'
 import { UserMenu } from '@/components/UserMenu'
 import { logout as logoutAction } from '@/app/login/actions'
+import Link from 'next/link'
 
-export default function DashboardLayout({
+export default async function DashboardLayout({
     children,
 }: {
     children: React.ReactNode
 }) {
-    const router = useRouter()
+    const { user } = await getAuthenticatedUser()
+
+    const userData = {
+        id: user.id,
+        name: (user as any).name,
+        email: user.email!,
+        agency_name: (user as any).agency_name,
+        role: (user as any).role
+    }
 
     return (
-        <UserProvider>
+        <UserProvider initialUserData={userData}>
             <div className="flex min-h-screen w-full flex-col bg-gray-50/50 lg:flex-row">
                 {/* Desktop Sidebar */}
                 <div className="hidden lg:block fixed inset-y-0 z-50">
@@ -37,8 +44,10 @@ export default function DashboardLayout({
                         <span className="font-serif font-bold text-base text-primary flex-1">PolicySathi</span>
 
                         {/* Mobile Notification Bell */}
-                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full" onClick={() => router.push('/notifications')}>
-                            <Bell className="h-4 w-4 text-gray-600" />
+                        <Button asChild variant="ghost" size="icon" className="h-8 w-8 rounded-full">
+                            <Link href="/notifications">
+                                <Bell className="h-4 w-4 text-gray-600" />
+                            </Link>
                         </Button>
 
                         {/* Mobile User Menu */}

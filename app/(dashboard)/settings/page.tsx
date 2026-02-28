@@ -1,16 +1,16 @@
-
-import { createClient } from '@/lib/supabase/server'
+import { getAuthenticatedUser } from '@/lib/supabase/auth'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { SettingsForm } from "@/components/SettingsForm"
+import { redirect } from 'next/navigation'
 
 export default async function SettingsPage() {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const { supabase, user } = await getAuthenticatedUser()
+    if (!user) redirect('/login')
 
-    // Fetch agent details
-    const { data: agent } = await supabase.from('agents').select('*').eq('id', user?.id).single()
+    // Fetch agent details using the established supabase client
+    const { data: agent } = await supabase.from('agents').select('*').eq('id', user.id).single()
 
     const defaultTemplates = {
         renewal: "Dear {customer_name}, your {policy_type} policy for {vehicle_no} is expiring on {expiry_date}. Please renew now to avoid penalty. Call {agent_name} at {agent_phone}.",
