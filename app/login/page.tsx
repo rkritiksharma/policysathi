@@ -18,7 +18,9 @@ import { Label } from "@/components/ui/label";
 import { Shield, Eye, EyeOff } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 
-export default function LoginPage() {
+import { Suspense } from "react";
+
+function LoginContent() {
     const [isPending, startTransition] = useTransition();
     const [showPassword, setShowPassword] = useState(false);
     const searchParams = useSearchParams();
@@ -132,5 +134,13 @@ export default function LoginPage() {
                 </CardFooter>
             </Card>
         </div>
+    );
+}
+
+export default function LoginPage() {
+    return (
+        <Suspense fallback={<div className="flex justify-center items-center min-h-screen">Loading...</div>}>
+            <LoginContent />
+        </Suspense>
     );
 }
