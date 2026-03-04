@@ -21,7 +21,7 @@ export function InsightsGrid({ marketShare, topCustomers, missedRenewals, growth
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
 
             {/* Month-over-Month Growth Banner */}
-            <Card className={`border-0 shadow-sm col-span-1 ${isGrowth ? 'bg-gradient-to-br from-green-50 to-emerald-50/40' : 'bg-gradient-to-br from-red-50 to-rose-50/40'}`}>
+            <Card className={`rounded-3xl border-0 shadow-xl shadow-slate-200/30 col-span-1 ${isGrowth ? 'bg-gradient-to-br from-green-50 to-emerald-50/40' : 'bg-gradient-to-br from-red-50 to-rose-50/40'}`}>
                 <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-semibold text-gray-600 uppercase tracking-wider flex items-center gap-2">
                         {isGrowth ? <TrendingUp className="h-4 w-4 text-green-600" /> : <TrendingDown className="h-4 w-4 text-red-500" />}
@@ -42,7 +42,7 @@ export function InsightsGrid({ marketShare, topCustomers, missedRenewals, growth
             </Card>
 
             {/* Company Market Share */}
-            <Card className="border-0 shadow-sm col-span-1 lg:col-span-2">
+            <Card className="rounded-[2rem] border border-white/60 bg-white/60 backdrop-blur-xl shadow-xl shadow-slate-200/40 col-span-1 lg:col-span-2">
                 <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-semibold text-gray-600 uppercase tracking-wider flex items-center gap-2">
                         <Building2 className="h-4 w-4 text-blue-500" />
@@ -86,7 +86,7 @@ export function InsightsGrid({ marketShare, topCustomers, missedRenewals, growth
             </Card>
 
             {/* Top Customers */}
-            <Card className="border-0 shadow-sm">
+            <Card className="rounded-[2rem] border border-white/60 bg-white/60 backdrop-blur-xl shadow-xl shadow-slate-200/40">
                 <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-semibold text-gray-600 uppercase tracking-wider flex items-center gap-2">
                         <Crown className="h-4 w-4 text-amber-500" />
@@ -117,7 +117,7 @@ export function InsightsGrid({ marketShare, topCustomers, missedRenewals, growth
             </Card>
 
             {/* Missed Renewals */}
-            <Card className="border-0 shadow-sm lg:col-span-2 border-l-4 border-l-red-400">
+            <Card className="rounded-[2rem] border border-white/60 bg-white/60 backdrop-blur-xl shadow-xl shadow-slate-200/40 lg:col-span-2 border-l-4 border-l-red-400">
                 <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-semibold text-gray-600 uppercase tracking-wider flex items-center gap-2">
                         <AlertTriangle className="h-4 w-4 text-red-500" />

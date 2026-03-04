@@ -142,7 +142,7 @@ export default async function ReportsPage(props: {
             </div>
 
             {/* Summary KPI Cards */}
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div className="bg-gradient-to-br from-amber-50 to-orange-50/40 border border-amber-100 rounded-xl px-4 py-3.5 flex items-center gap-3">
                     <div className="bg-amber-100 p-2 rounded-lg">
                         <Clock className="h-4 w-4 text-amber-600" />
@@ -174,7 +174,7 @@ export default async function ReportsPage(props: {
 
             {/* Tabs */}
             <Tabs defaultValue="upcoming" className="w-full">
-                <TabsList className="bg-gray-100/80 p-1 rounded-xl border border-gray-200 mb-4">
+                <TabsList className="bg-gray-100/80 p-1 rounded-xl border border-gray-200 mb-4 w-full flex justify-start overflow-x-auto">
                     <TabsTrigger value="upcoming" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-amber-700 font-medium text-sm px-4">
                         ⏰ Upcoming ({upcoming?.length || 0})
                     </TabsTrigger>

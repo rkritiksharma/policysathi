@@ -41,7 +41,7 @@ async function PaymentStats() {
                     </div>
                 </div>
             </Link>
-            <div className="bg-white border border-gray-100 rounded-xl px-4 py-3 shadow-sm flex items-center gap-3">
+            <div className="col-span-2 md:col-span-1 bg-white border border-gray-100 rounded-xl px-4 py-3 shadow-sm flex items-center gap-3">
                 <div className="bg-gray-100 p-2 rounded-lg"><Wallet className="h-4 w-4 text-gray-500" /></div>
                 <div className="flex flex-wrap gap-1.5">
                     <Link href="/payments?filter=paid"><span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-green-50 text-green-700 border border-green-100">{stats.paidPolicies} Paid</span></Link>

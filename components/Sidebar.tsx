@@ -32,10 +32,10 @@ export function Sidebar({ className }: { className?: string }) {
         <div className={cn("pb-12 w-64 border-r border-gray-100 min-h-screen bg-white/50 backdrop-blur-xl", className)}>
             <div className="space-y-6 py-6">
                 <div className="px-6">
-                    <h2 className="text-2xl font-serif font-bold tracking-tight text-primary">
+                    <h2 className="text-3xl font-serif font-black tracking-tight text-foreground">
                         PolicySathi
                     </h2>
-                    <p className="text-xs text-gray-400 mt-1 uppercase tracking-wider font-medium">Agent Console</p>
+                    <p className="text-[10px] text-muted-foreground mt-1 uppercase tracking-[0.2em] font-bold">Agent Console</p>
                 </div>
 
                 <div className="px-3">
@@ -48,10 +48,10 @@ export function Sidebar({ className }: { className?: string }) {
                                     asChild
                                     variant="ghost"
                                     className={cn(
-                                        "w-full justify-start rounded-xl mb-1 transition-all duration-200",
+                                        "w-full justify-start rounded-2xl mb-1.5 transition-all duration-300 px-4 py-6 group",
                                         isActive
-                                            ? "bg-primary/10 text-primary font-semibold shadow-sm"
-                                            : "text-gray-500 hover:text-primary hover:bg-gray-50"
+                                            ? "bg-primary text-primary-foreground font-bold shadow-lg shadow-primary/20"
+                                            : "text-muted-foreground hover:text-foreground hover:bg-slate-50"
                                     )}
                                 >
                                     <Link href={item.href}>

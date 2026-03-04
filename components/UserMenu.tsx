@@ -15,6 +15,7 @@ import { useUser } from '@/components/UserProvider'
 import { getInitials } from '@/lib/utils'
 import Link from 'next/link'
 import { User, Settings, LogOut } from 'lucide-react'
+import { useEffect, useState } from 'react'
 
 interface UserMenuProps {
     /** Avatar size class, e.g. "h-7 w-7" or "h-8 w-8" */
@@ -32,6 +33,11 @@ export function UserMenu({
 }: UserMenuProps) {
     const router = useRouter()
     const { user } = useUser()
+    const [mounted, setMounted] = useState(false)
+
+    useEffect(() => {
+        setMounted(true)
+    }, [])
 
     const handleLogout = async () => {
         try {
@@ -48,12 +54,12 @@ export function UserMenu({
                     <Avatar className={avatarSize}>
                         <AvatarImage src="/avatars/01.png" alt={user?.name || 'User'} />
                         <AvatarFallback className="text-xs md:text-sm">
-                            {user ? getInitials(user.name) : 'U'}
+                            {(mounted && user) ? getInitials(user.name) : 'U'}
                         </AvatarFallback>
                     </Avatar>
                 </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56" align="end" forceMount>
+            <DropdownMenuContent className="w-56 z-[100]" align="end" forceMount>
                 <DropdownMenuLabel className="font-normal">
                     <div className="flex flex-col space-y-1">
                         <p className="text-sm font-medium leading-none">{user?.name || 'Loading...'}</p>

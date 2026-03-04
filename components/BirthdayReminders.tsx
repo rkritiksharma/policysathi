@@ -28,7 +28,7 @@ export function BirthdayReminders() {
 
     if (isLoading) {
         return (
-            <Card className="shadow-sm border-gray-100">
+            <Card className="rounded-[2rem] shadow-2xl shadow-slate-200/40 border border-white/60 bg-white/60 backdrop-blur-xl">
                 <CardHeader className="pb-2">
                     <CardTitle className="text-base flex items-center gap-2">
                         <Cake className="h-5 w-5 text-pink-500" />
@@ -43,11 +43,11 @@ export function BirthdayReminders() {
     }
 
     return (
-        <Card className="shadow-sm border-gray-100">
+        <Card className="rounded-[2rem] shadow-2xl shadow-slate-200/40 border border-white/60 bg-white/60 backdrop-blur-xl">
             <CardHeader className="pb-2">
-                <CardTitle className="text-base flex items-center gap-2">
+                <CardTitle className="text-xl font-serif font-bold flex items-center gap-2">
                     <Cake className="h-5 w-5 text-pink-500" />
-                    Upcoming Birthdays
+                    Birthdays
                     {birthdays.length > 0 && (
                         <span className="ml-auto text-xs font-normal text-gray-500">
                             Next 30 days

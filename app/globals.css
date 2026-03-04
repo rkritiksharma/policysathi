@@ -46,7 +46,8 @@
   --card-foreground: 222.2 84% 4.9%;
   --popover: 0 0% 100%;
   --popover-foreground: 222.2 84% 4.9%;
-  --primary: 142.1 70.6% 45.3%; /* Professional Insurance Green */
+  --primary: 142.1 70.6% 45.3%;
+  /* Professional Insurance Green */
   --primary-foreground: 210 40% 98%;
   --secondary: 210 40% 96.1%;
   --secondary-foreground: 222.2 47.4% 11.2%;
@@ -273,6 +274,7 @@
 .animate-pulse-glow {
   animation: pulse-glow 3s ease-in-out infinite;
 }
+
 /* Status Colors */
 .status-active,
 .status-paid {
@@ -307,21 +309,27 @@
 
 /* Touch-friendly tap targets (minimum 44x44px) */
 @media (max-width: 768px) {
-  button, a, input, select, textarea {
+
+  button,
+  a,
+  input,
+  select,
+  textarea {
     min-height: 44px;
   }
-  
+
   /* Larger text for readability */
   body {
-    font-size: 16px; /* Prevents zoom on iOS */
+    font-size: 16px;
+    /* Prevents zoom on iOS */
   }
-  
+
   /* Better spacing */
   .container {
     padding-left: 1rem;
     padding-right: 1rem;
   }
-  
+
   /* Better modal sizing */
   .modal-content {
     max-height: 90vh;
@@ -357,10 +365,12 @@ html {
 
 /* Mobile viewport fix */
 @media (max-width: 768px) {
-  html, body {
+
+  html,
+  body {
     overflow-x: hidden;
   }
-  
+
   body {
     width: 100vw;
   }

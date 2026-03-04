@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Shield, TrendingUp, CheckCircle, ArrowRight } from 'lucide-react';
 import { TypeWriter } from './TypeWriter';
+import Image from 'next/image';
 
 const container: Variants = {
     hidden: { opacity: 0 },
@@ -132,88 +133,22 @@ export const AnimatedHero = () => {
                     </motion.div>
                 </motion.div>
 
-                {/* Right side animated abstract visual */}
+                {/* Right side static/animated image from the current landing page */}
                 <motion.div
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 1, delay: 0.5, type: "spring" }}
-                    className="hidden lg:block relative h-[600px] perspective-[1000px]"
+                    className="relative lg:block flex justify-center items-center w-full h-[600px] perspective-[1000px]"
                 >
-                    {/* Main Floating Card */}
-                    <motion.div
-                        animate={{
-                            y: [-10, 10, -10],
-                            rotateX: [5, -5, 5],
-                            rotateY: [-5, 5, -5]
-                        }}
-                        transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-                        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-96 bg-card/80 backdrop-blur-xl border border-white/20 dark:border-white/10 rounded-2xl shadow-2xl p-6 z-20 flex flex-col justify-between"
-                    >
-                        <div className="flex justify-between items-start">
-                            <div className="h-12 w-12 rounded-xl bg-primary/20 flex items-center justify-center">
-                                <Shield className="h-6 w-6 text-primary" />
-                            </div>
-                            <span className="px-3 py-1 bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-bold rounded-full">Active</span>
-                        </div>
-
-                        <div>
-                            <p className="text-sm text-muted-foreground">Comprehensive Family Health</p>
-                            <p className="text-2xl font-bold mt-1">₹15,00,000</p>
-                            <div className="mt-4 h-2 bg-muted rounded-full overflow-hidden">
-                                <motion.div
-                                    initial={{ width: 0 }}
-                                    animate={{ width: "75%" }}
-                                    transition={{ duration: 1.5, delay: 1 }}
-                                    className="h-full bg-primary"
-                                />
-                            </div>
-                            <p className="text-xs text-muted-foreground mt-2 flex justify-between">
-                                <span>Coverage utilized: 75%</span>
-                                <span className="text-primary font-medium">View</span>
-                            </p>
-                        </div>
-                    </motion.div>
-
-                    {/* Secondary Floating Card 1 */}
-                    <motion.div
-                        animate={{
-                            y: [10, -15, 10],
-                            x: [-10, 5, -10],
-                        }}
-                        transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-                        className="absolute top-[10%] right-[5%] w-64 h-auto bg-card/60 backdrop-blur-lg border border-white/10 rounded-xl shadow-xl p-4 z-10"
-                    >
-                        <div className="flex items-center gap-3 mb-3">
-                            <div className="h-8 w-8 rounded-lg bg-blue-500/20 flex items-center justify-center">
-                                <TrendingUp className="h-4 w-4 text-blue-500" />
-                            </div>
-                            <div>
-                                <p className="text-xs font-bold">Term Life Insurance</p>
-                                <p className="text-[10px] text-muted-foreground">Next premium in 12 days</p>
-                            </div>
-                        </div>
-                        <Button size="sm" className="w-full text-xs h-8">Pay ₹2,450</Button>
-                    </motion.div>
-
-                    {/* Secondary Floating Card 2 */}
-                    <motion.div
-                        animate={{
-                            y: [-15, 10, -15],
-                            rotateZ: [-2, 2, -2]
-                        }}
-                        transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 2 }}
-                        className="absolute bottom-[15%] left-[0%] w-72 h-auto bg-card/60 backdrop-blur-lg border border-white/10 rounded-xl shadow-xl p-4 z-30"
-                    >
-                        <div className="flex items-center gap-3">
-                            <div className="h-10 w-10 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
-                                <CheckCircle className="h-5 w-5 text-emerald-500" />
-                            </div>
-                            <div>
-                                <p className="text-sm font-bold">Motor Claim Approved</p>
-                                <p className="text-xs text-muted-foreground">Amount ₹45,000 sent to bank</p>
-                            </div>
-                        </div>
-                    </motion.div>
+                    <div className="relative w-full h-full max-w-[800px] flex justify-center items-center">
+                        <Image
+                            src="/landing/hero-insurance.png"
+                            alt="PolicySathi Hero Illustration"
+                            fill
+                            className="object-contain drop-shadow-[0_20px_50px_rgba(16,185,129,0.3)] animate-[float_6s_ease-in-out_infinite]"
+                            priority
+                        />
+                    </div>
                 </motion.div>
             </div>
         </section>
