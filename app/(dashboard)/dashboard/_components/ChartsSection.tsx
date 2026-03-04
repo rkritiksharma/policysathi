@@ -11,8 +11,8 @@ export async function ChartsSection({ range }: { range: string }) {
                 <ChartFilter />
             </div>
             <DashboardCharts
-                revenueData={revenueStats.monthlyData}
-                policyDistribution={revenueStats.policyDistribution}
+                revenueData={revenueStats.monthlyData || []}
+                policyDistribution={revenueStats.policyDistribution || []}
             />
         </div>
     )
